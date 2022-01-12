@@ -1,5 +1,5 @@
 # rm_mapping
-Road Marking Mapping
+Road Mark Mapping with baseline framework of [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2)
 
 ## Install OpenCV 3.4.4
 ```

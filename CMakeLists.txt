@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(rm_slam)
+project(rm_mapping)
 
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release)

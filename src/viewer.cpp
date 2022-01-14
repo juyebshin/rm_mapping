@@ -64,6 +64,8 @@ void Viewer::run()
         if(checkFinish())
             break;
     }
+
+    setFinish();
 }
 
 void Viewer::requestFinish()

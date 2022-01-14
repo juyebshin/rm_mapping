@@ -20,26 +20,29 @@
 using namespace std;
 
 void LoadImages(const string &strSequence, vector<string> &vstrImageFilenames,
-                vector<double> &vTimestamps);
+                vector<double> &vTimestamps, const string &strStart);
 vector<string> split(string str, char Delimiter);
 
 int main(int argc, char **argv)
 {
     cout << "Road Marking SLAM mono_apollo" << endl;
-    if(argc != 3)
+    if(argc != 4)
     {
-        cerr << endl << "Usage: ./mono_apollo path_to_settings path_to_sequence" << endl;
+        cerr << endl << "Usage: ./mono_apollo path_to_settings path_to_sequence starting_record_number" << endl;
         return 1;
     }
+
+    stringstream ssStart;
+    ssStart << std::setfill('0') << std::setw(3) << argv[3];
 
     // Retrieve paths to images
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
-    LoadImages(string(argv[2]), vstrImageFilenames, vTimestamps);
+    LoadImages(string(argv[2]), vstrImageFilenames, vTimestamps, ssStart.str());
 
     int nImages = vstrImageFilenames.size();
 
-    RM_SLAM::System SLAM(argv[1], RM_SLAM::System::MONOCULAR, true);
+    RM_SLAM::System SLAM(argv[1], RM_SLAM::System::MONOCULAR, false);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -57,6 +60,9 @@ int main(int argc, char **argv)
             cerr << endl << "Failed to load image at: " << vstrImageFilenames[ni] << endl;
             return 1;
         }
+        cout << endl << "Image index: " << ni << " / " << nImages << endl;
+        cout << "File: " << vstrImageFilenames[ni] << endl << endl;
+
         #ifdef COMPILEDWITHC11
             std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
         #else
@@ -84,6 +90,8 @@ int main(int argc, char **argv)
             T = tframe-vTimestamps[ni-1];
 
         cout << "track time: " << ttrack << " T: " << T << endl;
+        if(T-ttrack > 90.0) // more then 1.5 minutes
+            break;
         if(ttrack<T)
             usleep((T-ttrack)*1e6);
     }
@@ -93,18 +101,21 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void LoadImages(const string &strPathToSequence, vector<string> &vstrImageFilenames, vector<double> &vTimestamps)
+void LoadImages(const string &strPathToSequence, vector<string> &vstrImageFilenames, vector<double> &vTimestamps, const string &strStart)
 {
     // strPathToSequence: ~/VDC/Dataset/ApolloScape/LaneSegmentation/Colorimage_road02/ColorImage/
     DIR *dir; struct dirent *diread;
     vector<string> files;
+
+    string strStartPath = string("Record") + strStart;
+    cout << "starting record: " << strStartPath << endl;
 
     if ((dir = opendir(strPathToSequence.c_str())) != nullptr) {
         while ((diread = readdir(dir)) != nullptr) {
             if ( !strncmp(diread->d_name, ".", (size_t)1) )
                 continue; // ignore directory . or ..
             files.push_back(string(diread->d_name));
-            cout << "file: " << diread->d_name << endl;
+            // cout << "file: " << diread->d_name << endl;
         }
         closedir (dir);
     } else {
@@ -112,14 +123,22 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageFilena
         return;
     }
 
-    sort(files.begin(), files.end());
+    std::sort(files.begin(), files.end());
+    vector<string>::iterator itr = find(files.begin(), files.end(), strStartPath);
+    if(itr == files.end())
+    {
+        perror ("Starting record number not found");
+        return;
+    }
+
+    files.erase(files.begin(), itr);
 
     for (auto file : files)
     {
         cout << "file: " << file << endl;
         // if (!strcmp(file, "")) continue;
         string strPrefixLeft = strPathToSequence + "/" + (file) + "/Camera 5/";
-        cout << "strPrefixLeft: " << strPrefixLeft << endl;
+        // cout << "strPrefixLeft: " << strPrefixLeft << endl;
         if ((dir = opendir(strPrefixLeft.c_str())) != nullptr) {
             while ((diread = readdir(dir)) != nullptr) {
                 if ( !strncmp(diread->d_name, ".", (size_t)1) )
@@ -155,7 +174,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageFilena
                     // cout << "dmsec: " << dmsec << endl;
                     time = time + dmsec;
                     vTimestamps.push_back(time);
-                    cout << fixed << "timestamp: " << vTimestamps.back() << endl;
+                    // cout << fixed << "timestamp: " << vTimestamps.back() << endl;
                 }
             }
             closedir (dir);

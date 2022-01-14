@@ -57,7 +57,7 @@ cv::Mat Tracking::grabImageMonocular(const cv::Mat &im, const double &timestamp)
 
 void Tracking::setViewer(Viewer *pViewer)
 {
-    mpViewer=pViewer;
+    mpViewer = pViewer;
 }
 
 void Tracking::track()

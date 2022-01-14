@@ -15,7 +15,7 @@ using namespace std;
 namespace RM_SLAM
 {
 System::System(const string &strSettingsFile, const eSensor sensor, const bool bUseViewer)
-    : mSensor(sensor)
+    : mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL))
 {
     if(mSensor==MONOCULAR)
         cout << "Monocular" << endl;
@@ -57,12 +57,14 @@ cv::Mat System::trackMonocular(const cv::Mat &im, const double &timestamp)
 
 void System::shutdown()
 {
+    cout << "shutdown system" << endl;
     if(mpViewer)
     {
         mpViewer->requestFinish();
         while(!mpViewer->isFinished())
             usleep(5000);
     }
+    cout << "system finished succesfully" << endl;
 }
 
 } // namespace RM_SLAM

@@ -55,6 +55,49 @@ cv::Mat Tracking::grabImageMonocular(const cv::Mat &im, const double &timestamp)
     return cv::Mat();
 }
 
+cv::Mat Tracking::grabImageStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)
+{
+    mImColor = imLeft;
+    cv::Mat imGrayRight = imRight;
+
+    // left
+    if(mImColor.channels()==1)
+        mImColor.copyTo(mImGray);
+    else if(mImColor.channels()==3)
+    {
+        if(mbRGB)
+            cvtColor(mImColor,mImGray,CV_RGB2GRAY);
+        else
+            cvtColor(mImColor,mImGray,CV_BGR2GRAY);
+    }
+    else if(mImColor.channels()==4)
+    {
+        if(mbRGB)
+            cvtColor(mImColor,mImGray,CV_RGBA2GRAY);
+        else
+            cvtColor(mImColor,mImGray,CV_BGRA2GRAY);
+    }
+    // right
+    if(imGrayRight.channels()==3)
+    {
+        if(mbRGB)
+            cvtColor(imGrayRight,imGrayRight,CV_RGB2GRAY);
+        else
+            cvtColor(imGrayRight,imGrayRight,CV_BGR2GRAY);
+    }
+    else if(mImColor.channels()==4)
+    {
+        if(mbRGB)
+            cvtColor(imGrayRight,imGrayRight,CV_RGBA2GRAY);
+        else
+            cvtColor(imGrayRight,imGrayRight,CV_BGRA2GRAY);
+    }
+
+    track();
+
+    return cv::Mat();
+}
+
 void Tracking::setViewer(Viewer *pViewer)
 {
     mpViewer = pViewer;

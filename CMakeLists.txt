@@ -117,6 +117,10 @@ add_executable(mono_apollo
 examples/mono_apollo.cpp)
 target_link_libraries(mono_apollo ${PROJECT_NAME})
 
+add_executable(stereo_apollo
+examples/stereo_apollo.cpp)
+target_link_libraries(stereo_apollo ${PROJECT_NAME})
+
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/RGB-D)
 
 # add_executable(rgbd_tum

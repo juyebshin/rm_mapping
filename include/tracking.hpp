@@ -20,6 +20,7 @@ public:
     Tracking(System* pSystem, FrameDrawer* pFrameDrawer, const std::string &strSettingPath, const int sensor);
 
     cv::Mat grabImageMonocular(const cv::Mat &im, const double &timestamp);
+    cv::Mat grabImageStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp);
 
     void setViewer(Viewer *pViewer);
 

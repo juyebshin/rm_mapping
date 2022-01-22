@@ -26,6 +26,7 @@ public:
     System(const std::string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true);
 
     cv::Mat trackMonocular(const cv::Mat &im, const double &timestamp);
+    cv::Mat trackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp);
 
     void shutdown();
 

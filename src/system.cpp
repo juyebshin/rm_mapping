@@ -46,11 +46,24 @@ cv::Mat System::trackMonocular(const cv::Mat &im, const double &timestamp)
 {
     if(mSensor != MONOCULAR)
     {
-        cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular." << endl;
+        cerr << "ERROR: you called trackMonocular but input sensor was not set to Monocular." << endl;
         exit(-1);
     }
 
     cv::Mat Tcw = mpTracker->grabImageMonocular(im, timestamp);
+
+    return Tcw;
+}
+
+cv::Mat System::trackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)
+{
+    if(mSensor != STEREO)
+    {
+        cerr << "ERROR: you called trackStereo but input sensor was not set to Stereo." << endl;
+        exit(-1);
+    }
+
+    cv::Mat Tcw = mpTracker->grabImageStereo(imLeft, imRight, timestamp);
 
     return Tcw;
 }

@@ -55,7 +55,7 @@ cv::Mat System::trackMonocular(const cv::Mat &im, const double &timestamp)
     return Tcw;
 }
 
-cv::Mat System::trackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)
+cv::Mat System::trackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &labelLeft, const cv::Mat &labelRight, const double &timestamp)
 {
     if(mSensor != STEREO)
     {
@@ -63,7 +63,7 @@ cv::Mat System::trackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
         exit(-1);
     }
 
-    cv::Mat Tcw = mpTracker->grabImageStereo(imLeft, imRight, timestamp);
+    cv::Mat Tcw = mpTracker->grabImageStereo(imLeft, imRight, labelLeft, labelRight, timestamp);
 
     return Tcw;
 }

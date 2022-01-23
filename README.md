@@ -7,6 +7,9 @@ chmod a+x opencv-3.4.4_install.sh
 ./opencv-3.4.4_install.sh
 ```
 
+## Install Pangolin
+We use [Pangolin](https://github.com/stevenlovegrove/Pangolin) for visualization same as [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2). We recommand Pangolin version 0.5 for build issue.
+
 ## Build
 ```
 chmod a+x build.sh

@@ -20,14 +20,16 @@ public:
     Tracking(System* pSystem, FrameDrawer* pFrameDrawer, const std::string &strSettingPath, const int sensor);
 
     cv::Mat grabImageMonocular(const cv::Mat &im, const double &timestamp);
-    cv::Mat grabImageStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp);
+    cv::Mat grabImageStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &labelLeft, const cv::Mat &labelRight, const double &timestamp);
 
     void setViewer(Viewer *pViewer);
 
 
     int mSensor;
     
+    // Left image and label are declared as public variable for vis
     cv::Mat mImColor, mImGray;
+    cv::Mat mLabelColor, mLabelGray; // Color: color map, Gray: road marking index
 
 protected:
     void track();
@@ -36,6 +38,11 @@ protected:
 
     Viewer* mpViewer;
     FrameDrawer* mpFrameDrawer;
+
+    //Calibration matrix
+    cv::Mat mK;
+    cv::Mat mDistCoef;
+    float mbf;
 
     bool mbRGB;
 };

@@ -20,10 +20,12 @@ public:
     void update(Tracking *pTracker);
 
     cv::Mat drawFrame();
+    cv::Mat drawLabel();
 
 protected:
 
     cv::Mat mIm;
+    cv::Mat mLabel;
 
     std::mutex mMutex;
 };

@@ -5,10 +5,10 @@
 #--------------------------------------------------------------------------------------------
 
 # Camera calibration and distortion parameters (OpenCV) 
-Camera.fx: 2304.54786556982
-Camera.fy: 2305.875668062
-Camera.cx: 1686.23787612802
-Camera.cy: 1354.98486439791
+Camera.fx: 2525.719905504968
+Camera.fy: 2525.719905504968
+Camera.cx: 1705.5546875
+Camera.cy: 1348.067687988281
 
 Camera.k1: 0.0
 Camera.k2: 0.0
@@ -18,8 +18,70 @@ Camera.p2: 0.0
 # Camera frames per second 
 Camera.fps: 30.0
 
+# stereo baseline times fx
+# just baseline
+Camera.bf: 0.622042
+
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
-Camera.RGB: 1
+Camera.RGB: 0
+
+#--------------------------------------------------------------------------------------------
+# Stereo Rectification. Only if you need to pre-rectify the images.
+# Camera.fx, .fy, etc must be the same as in LEFT.P
+#--------------------------------------------------------------------------------------------
+LEFT.height: 2710
+LEFT.width: 3384
+LEFT.D: !!opencv-matrix
+   rows: 1
+   cols: 5
+   dt: d
+   data:[0.0, 0.0, 0.0, 0.0, 0.0]
+LEFT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [2304.54786556982, 0.0, 1686.23787612802, 0.0, 2305.87566806200, 1354.98486439791, 0.0, 0.0, 1.0]
+LEFT.R:  !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [ 0.9993754562283294  , 0.003922892913017495, -0.0351184908504284,
+         -0.003972976110137937, 0.9999911877135791  , -0.001356449782955985,
+          0.03511286016898793 , 0.001495127545865333,  0.999382235005393]
+LEFT.P:  !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data: [2525.749489461553, 0, 1705.562133789062, 0,
+          0, 2525.749489461553, 1348.020660400391, 0,
+          0, 0, 1, 0]
+
+RIGHT.height: 2710
+RIGHT.width: 3384
+RIGHT.D: !!opencv-matrix
+   rows: 1
+   cols: 5
+   dt: d
+   data:[0.0, 0.0, 0.0, 0.0, 0.0]
+RIGHT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [2300.39065314361, 0.0, 1713.21615190657, 0.0, 2301.31478860597, 1342.91100799715, 0.0, 0.0, 1]
+RIGHT.R:  !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [ 0.998864953936209  , -0.03534712356752903 , 0.031927803769078,
+          0.03530154527274873,  0.9993747243455459  , 0.001990286567335062,
+         -0.0319781909959114 , -0.000860926690187421, 0.999488196081306]
+RIGHT.P:  !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data: [2525.749489461553, 0, 1705.562133789062, -1571.121875334519,
+          0, 2525.749489461553, 1348.020660400391, 0,
+          0, 0, 1, 0]
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
@@ -51,7 +113,7 @@ Viewer.PointSize: 2
 Viewer.CameraSize: 0.15
 Viewer.CameraLineWidth: 2
 Viewer.ViewpointX: 0
-Viewer.ViewpointY: -10
-Viewer.ViewpointZ: -0.1
+Viewer.ViewpointY: -30
+Viewer.ViewpointZ: -10
 Viewer.ViewpointF: 2000
 

@@ -12,6 +12,7 @@ namespace RM_SLAM
 class Viewer;
 class Tracking;
 class FrameDrawer;
+class RoadMarking;
 
 class System
 {
@@ -23,7 +24,7 @@ public:
 
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
     // const string &strVocFile, const string &strSettingsFile,
-    System(const std::string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true);
+    System(const std::string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true, const cv::Mat &Q = cv::Mat());
 
     cv::Mat trackMonocular(const cv::Mat &im, const double &timestamp);
     cv::Mat trackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &labelLeft, const cv::Mat &labelRight, const double &timestamp);
@@ -38,6 +39,7 @@ private:
     FrameDrawer* mpFrameDrawer;
 
     Tracking* mpTracker;
+    RoadMarking* mpRoadMark;
 
     std::thread* mptViewer;
 };

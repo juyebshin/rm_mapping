@@ -15,7 +15,8 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "system.hpp"
+// #include "system.hpp"
+#include "System.h"
 
 using namespace std;
 
@@ -26,23 +27,24 @@ vector<string> split(string str, char Delimiter);
 int main(int argc, char **argv)
 {
     cout << "Road Marking SLAM mono_apollo" << endl;
-    if(argc != 4)
+    if(argc != 5)
     {
-        cerr << endl << "Usage: ./mono_apollo path_to_settings path_to_sequence starting_record_number" << endl;
+        cerr << endl << "Usage: ./mono_apollo path_to_vocabulary path_to_settings path_to_image starting_record_number" << endl;
         return 1;
     }
 
     stringstream ssStart;
-    ssStart << std::setfill('0') << std::setw(3) << argv[3];
+    ssStart << std::setfill('0') << std::setw(3) << argv[4];
 
     // Retrieve paths to images
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
-    LoadImages(string(argv[2]), vstrImageFilenames, vTimestamps, ssStart.str());
+    LoadImages(string(argv[3]), vstrImageFilenames, vTimestamps, ssStart.str());
+    cout << "image left size: " << vstrImageFilenames.size() << endl;
 
     int nImages = vstrImageFilenames.size();
 
-    RM_SLAM::System SLAM(argv[1], RM_SLAM::System::MONOCULAR, false);
+    RM_SLAM::System SLAM(argv[1], argv[2], RM_SLAM::System::MONOCULAR, true);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -70,7 +72,7 @@ int main(int argc, char **argv)
         #endif
 
         // Pass image to SLAM system and track
-        SLAM.trackMonocular(im, tframe);
+        SLAM.TrackMonocular(im, tframe);
 
         #ifdef COMPILEDWITHC11
             std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -96,7 +98,7 @@ int main(int argc, char **argv)
             usleep((T-ttrack)*1e6);
     }
 
-    SLAM.shutdown();
+    SLAM.Shutdown();
     
     return 0;
 }

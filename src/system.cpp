@@ -4,6 +4,7 @@
 #include "viewer.hpp"
 #include "tracking.hpp"
 #include "framedrawer.hpp"
+#include "roadmarking.hpp"
 
 #include <iostream>
 #include <unistd.h>
@@ -14,8 +15,8 @@ using namespace std;
 
 namespace RM_SLAM
 {
-System::System(const string &strSettingsFile, const eSensor sensor, const bool bUseViewer)
-    : mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL))
+System::System(const string &strSettingsFile, const eSensor sensor, const bool bUseViewer, const cv::Mat &Q)
+    : mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mpRoadMark(static_cast<RoadMarking*>(NULL))
 {
     if(mSensor==MONOCULAR)
         cout << "Monocular" << endl;
@@ -39,6 +40,28 @@ System::System(const string &strSettingsFile, const eSensor sensor, const bool b
         mpViewer = new Viewer(this, mpFrameDrawer, strSettingsFile);
         mptViewer = new thread(&Viewer::run, mpViewer);
         mpTracker->setViewer(mpViewer);
+    }
+
+    if(!Q.empty())
+    {
+        cv::Mat scaleQ;
+        Q.copyTo(scaleQ);
+        float fImScale = fsSettings["Camera.scale"];
+        if( fImScale <= 0.0 && fImScale > 1.0 )
+            fImScale = 1.0;
+            
+        int rows = fsSettings["LEFT.height"];
+        int cols = fsSettings["LEFT.width"];
+
+        rows = static_cast<int>(rows*fImScale);
+        cols = static_cast<int>(cols*fImScale);
+
+        scaleQ.at<double>(0,3) *= fImScale;
+        scaleQ.at<double>(1,3) *= fImScale;
+        scaleQ.at<double>(2,3) *= fImScale;
+
+        mpRoadMark = new RoadMarking(cv::Size(cols, rows), scaleQ);
+        mpTracker->setRoadMarking(mpRoadMark);
     }
 }
 

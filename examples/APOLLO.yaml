@@ -20,10 +20,31 @@ Camera.fps: 30.0
 
 # stereo baseline times fx
 # just baseline
-Camera.bf: 0.622042
+Camera.bf: 1571.10386146
 
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 0
+
+# Camera scale
+Camera.scale: 0.3
+
+#--------------------------------------------------------------------------------------------
+# Stereo extrinsic. 
+# For reconstruction of road markings
+#--------------------------------------------------------------------------------------------
+Stereo.R: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [ 9.96978057e-01, 3.91718762e-02, -6.70849865e-02,
+         -3.93257593e-02, 9.99225970e-01, -9.74686202e-04,
+          6.69948100e-02, 3.60985263e-03,  9.97746748e-01 ]
+
+Stereo.t: !!opencv-matrix
+  rows: 3
+  cols: 1
+  dt: d
+  data: [ -0.6213358, 0.02198739, -0.01986043 ]
 
 #--------------------------------------------------------------------------------------------
 # Stereo Rectification. Only if you need to pre-rectify the images.
@@ -39,8 +60,10 @@ LEFT.D: !!opencv-matrix
 LEFT.K: !!opencv-matrix
    rows: 3
    cols: 3
-   dt: d
-   data: [2304.54786556982, 0.0, 1686.23787612802, 0.0, 2305.87566806200, 1354.98486439791, 0.0, 0.0, 1.0]
+   dt: f
+   data: [2304.54786556982, 0.0, 1686.23787612802, 
+          0.0, 2305.87566806200, 1354.98486439791, 
+          0.0, 0.0, 1.0]
 LEFT.R:  !!opencv-matrix
   rows: 3
   cols: 3
@@ -66,8 +89,8 @@ RIGHT.D: !!opencv-matrix
 RIGHT.K: !!opencv-matrix
    rows: 3
    cols: 3
-   dt: d
-   data: [2300.39065314361, 0.0, 1713.21615190657, 0.0, 2301.31478860597, 1342.91100799715, 0.0, 0.0, 1]
+   dt: f
+   data: [2300.39065314361, 0.0, 1713.21615190657, 0.0, 2301.31478860597, 1342.91100799715, 0.0, 0.0, 1.0]
 RIGHT.R:  !!opencv-matrix
   rows: 3
   cols: 3
@@ -113,7 +136,7 @@ Viewer.PointSize: 2
 Viewer.CameraSize: 0.15
 Viewer.CameraLineWidth: 2
 Viewer.ViewpointX: 0
-Viewer.ViewpointY: -30
-Viewer.ViewpointZ: -10
+Viewer.ViewpointY: -100
+Viewer.ViewpointZ: -100
 Viewer.ViewpointF: 2000
 

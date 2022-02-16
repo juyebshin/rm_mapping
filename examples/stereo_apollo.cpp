@@ -15,7 +15,8 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "system.hpp"
+// #include "system.hpp"
+#include "System.h"
 
 using namespace std;
 
@@ -27,11 +28,13 @@ vector<string> split(string str, char Delimiter);
 
 int main(int argc, char **argv)
 {
-    if(argc != 5)
+    if(argc != 5 && argc != 6)
     {
-        cerr << endl << "Usage: ./stereo_apollo path_to_settings path_to_color path_to_label starting_record_number" << endl;
+        cerr << endl << "Usage: ./stereo_apollo path_to_vocabulary path_to_settings path_to_color starting_record_number (path_to_label)" << endl;
         return 1;
     }
+
+    const bool bLabel = (argc == 6);
 
     stringstream ssStart;
     ssStart << std::setfill('0') << std::setw(3) << argv[4];
@@ -40,11 +43,12 @@ int main(int argc, char **argv)
     vector<string> vstrImageLeft;
     vector<string> vstrImageRight;
     vector<double> vTimestamps;
-    loadImages(string(argv[2]), vstrImageLeft, vstrImageRight, vTimestamps, ssStart.str());
+    loadImages(string(argv[3]), vstrImageLeft, vstrImageRight, vTimestamps, ssStart.str());
 
     vector<string> vstrLabelLeft;
     vector<string> vstrLabelRight;
-    loadLabels(string(argv[3]), vstrLabelLeft, vstrLabelRight, ssStart.str());
+    if(bLabel)
+        loadLabels(string(argv[3]), vstrLabelLeft, vstrLabelRight, ssStart.str());
 
     cout << "image left size: " << vstrImageLeft.size() << ", label left size: " << vstrLabelLeft.size() << endl;
 
@@ -70,7 +74,7 @@ int main(int argc, char **argv)
     }
 
     // Read rectification parameters
-    cv::FileStorage fsSettings(argv[1], cv::FileStorage::READ);
+    cv::FileStorage fsSettings(argv[2], cv::FileStorage::READ);
     if(!fsSettings.isOpened())
     {
         cerr << "ERROR: Wrong path to settings" << endl;
@@ -81,11 +85,11 @@ int main(int argc, char **argv)
     fsSettings["LEFT.K"] >> K_l;
     fsSettings["RIGHT.K"] >> K_r;
 
-    fsSettings["LEFT.P"] >> P_l;
-    fsSettings["RIGHT.P"] >> P_r;
+    // fsSettings["LEFT.P"] >> P_l;
+    // fsSettings["RIGHT.P"] >> P_r;
 
-    fsSettings["LEFT.R"] >> R_l;
-    fsSettings["RIGHT.R"] >> R_r;
+    // fsSettings["LEFT.R"] >> R_l;
+    // fsSettings["RIGHT.R"] >> R_r;
 
     fsSettings["LEFT.D"] >> D_l;
     fsSettings["RIGHT.D"] >> D_r;
@@ -95,21 +99,35 @@ int main(int argc, char **argv)
     int rows_r = fsSettings["RIGHT.height"];
     int cols_r = fsSettings["RIGHT.width"];
 
-    if(K_l.empty() || K_r.empty() || P_l.empty() || P_r.empty() || R_l.empty() || R_r.empty() || D_l.empty() || D_r.empty() ||
-            rows_l==0 || rows_r==0 || cols_l==0 || cols_r==0)
+    cv::Mat R12, t12;
+    fsSettings["Stereo.R"] >> R12;
+    fsSettings["Stereo.t"] >> t12;
+
+    cout << "R12\n" << R12 << endl;
+    cout << "t12\n" << t12 << endl;
+
+    if(K_l.empty() || K_r.empty() /*|| P_l.empty() || P_r.empty() || R_l.empty() || R_r.empty()*/ || D_l.empty() || D_r.empty() ||
+            rows_l==0 || rows_r==0 || cols_l==0 || cols_r==0 || R12.empty() || t12.empty())
     {
         cerr << "ERROR: Calibration parameters to rectify stereo are missing!" << endl;
         return -1;
     }
 
-    cv::Mat M1l,M2l,M1r,M2r;
+    cv::Mat M1l,M2l,M1r,M2r,Q;
+    cv::stereoRectify(K_l, D_l, K_r, D_r, cv::Size(cols_l,rows_l), R12, t12, R_l, R_r, P_l, P_r, Q, cv::CALIB_ZERO_DISPARITY, 0);
     cv::initUndistortRectifyMap(K_l,D_l,R_l,P_l.rowRange(0,3).colRange(0,3),cv::Size(cols_l,rows_l),CV_32F,M1l,M2l);
     cv::initUndistortRectifyMap(K_r,D_r,R_r,P_r.rowRange(0,3).colRange(0,3),cv::Size(cols_r,rows_r),CV_32F,M1r,M2r);
+    
+    std::cout << "R1\n" << R_l << std::endl;
+    std::cout << "P1\n" << P_l << std::endl;
+    std::cout << "R2\n" << R_r << std::endl;
+    std::cout << "P2\n" << P_r << std::endl;
+    cout << "stereo Q =\n" << Q << endl; 
 
     const int nImages = vstrImageLeft.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    RM_SLAM::System SLAM(argv[1],RM_SLAM::System::STEREO,true);
+    RM_SLAM::System SLAM(argv[1], argv[2], RM_SLAM::System::STEREO, true); // Q
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -127,10 +145,7 @@ int main(int argc, char **argv)
         /* code */
         imLeft = cv::imread(vstrImageLeft[ni], CV_LOAD_IMAGE_UNCHANGED);
         imRight = cv::imread(vstrImageRight[ni], CV_LOAD_IMAGE_UNCHANGED);
-        labelLeft = cv::imread(vstrLabelLeft[ni], CV_LOAD_IMAGE_UNCHANGED);
-        labelRight = cv::imread(vstrLabelRight[ni], CV_LOAD_IMAGE_UNCHANGED);
-        double tframe = vTimestamps[ni];
-
+        
         if(imLeft.empty())
         {
             cerr << endl << "Failed to load image at: " << vstrImageLeft[ni] << endl;
@@ -141,22 +156,35 @@ int main(int argc, char **argv)
             cerr << endl << "Failed to load image at: " << vstrImageRight[ni] << endl;
             return 1;
         }
-        if(labelLeft.empty())
-        {
-            cerr << endl << "Failed to load image at: " << vstrImageLeft[ni] << endl;
-            return 1;
-        }
-        if(labelRight.empty())
-        {
-            cerr << endl << "Failed to load image at: " << vstrImageRight[ni] << endl;
-            return 1;
-        }
         cv::remap(imLeft,imLeftRect,M1l,M2l,cv::INTER_LINEAR);
         cv::remap(imRight,imRightRect,M1r,M2r,cv::INTER_LINEAR);
-        cv::remap(labelLeft,labelLeftRect,M1l,M2l,cv::INTER_NEAREST);
-        cv::remap(labelRight,labelRightRect,M1r,M2r,cv::INTER_NEAREST);
+
+        if(bLabel)
+        {
+            labelLeft = cv::imread(vstrLabelLeft[ni], CV_LOAD_IMAGE_UNCHANGED);
+            labelRight = cv::imread(vstrLabelRight[ni], CV_LOAD_IMAGE_UNCHANGED);
+
+            if(labelLeft.empty())
+            {
+                cerr << endl << "Failed to load image at: " << vstrImageLeft[ni] << endl;
+                return 1;
+            }
+            if(labelRight.empty())
+            {
+                cerr << endl << "Failed to load image at: " << vstrImageRight[ni] << endl;
+                return 1;
+            }
+            cv::remap(labelLeft,labelLeftRect,M1l,M2l,cv::INTER_NEAREST);
+            cv::remap(labelRight,labelRightRect,M1r,M2r,cv::INTER_NEAREST);
+        }
+        double tframe = vTimestamps[ni];
         cout << endl << "Image index: " << ni << " / " << nImages << endl;
         cout << "File: " << vstrImageLeft[ni] << endl << endl;
+
+        while(!SLAM.CheckStart())
+        {
+            usleep(1000);
+        }
 
         #ifdef COMPILEDWITHC11
             std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
@@ -165,7 +193,15 @@ int main(int argc, char **argv)
         #endif
 
         // Pass image to SLAM system and track
-        SLAM.trackStereo(imLeftRect, imRightRect, labelLeftRect, labelRightRect, tframe);
+        // SLAM.trackStereo(imLeftRect, imRightRect, labelLeftRect, labelRightRect, tframe);
+        if(bLabel)
+        {
+            SLAM.TrackStereo(imLeftRect, imRightRect, labelLeftRect, labelRightRect, tframe);
+        }
+        else
+        {
+            SLAM.TrackStereo(imLeftRect, imRightRect, tframe);
+        }
 
         #ifdef COMPILEDWITHC11
             std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -191,7 +227,7 @@ int main(int argc, char **argv)
             usleep((T-ttrack)*1e6);
     }
 
-    SLAM.shutdown();
+    SLAM.Shutdown();
     
     return 0;
 }

@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     const int nImages = vstrImageLeft.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    RM_SLAM::System SLAM(argv[1], argv[2], RM_SLAM::System::STEREO, true); // Q
+    RM_SLAM::System SLAM(argv[1], argv[2], RM_SLAM::System::STEREO, true, Q); // Q
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;

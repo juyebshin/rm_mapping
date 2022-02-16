@@ -6,13 +6,12 @@
 
 namespace RM_SLAM
 {
-RoadMarking::RoadMarking(const cv::Size &imSize, const cv::Mat &Q)
-    : mSize(imSize), mMatQ(Q)
+RoadMarking::RoadMarking()
 {
 
 }
 
-bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat& maskLeft, const cv::Mat& maskRight)
+bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat& maskLeft, const cv::Mat& maskRight, const cv::Mat& Q)
 {
     std::cout << "image size: " << imLeft.size() << std::endl;
     // check for correct size
@@ -28,15 +27,10 @@ bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const c
     // get image width and height
     int32_t width  = imLeft.cols;
     int32_t height = imLeft.rows;
+    cv::Size imsize(width, height);
 
-    if(mSize.width != width || mSize.height != height)
-    {
-        std::cout << "ERROR: Different size from initialization." << std::endl;
-        return false;
-    }
-
-    cv::Mat imLeft32f(mSize, CV_32F);
-    cv::Mat imRight32f(mSize, CV_32F);
+    cv::Mat imLeft32f(imsize, CV_32F);
+    cv::Mat imRight32f(imsize, CV_32F);
 
     // allocate memory for disparity images
     const int32_t dims[3] = {width,height,width}; // bytes per line = width
@@ -70,7 +64,7 @@ bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const c
     //     }
     // }
     
-    return convertTo3DPoints(imLeft, imLeft32f);
+    return convertTo3DPoints(imLeft, imLeft32f, Q);
 }
 
 std::vector<cv::Point3d *> RoadMarking::getAllPoints() const
@@ -78,18 +72,13 @@ std::vector<cv::Point3d *> RoadMarking::getAllPoints() const
     return std::vector<cv::Point3d*>(mvpPts3D.begin(),mvpPts3D.end());
 }
 
-bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat imLeft32f)
+bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat imLeft32f, const cv::Mat& Q)
 {
-    if(imLeft.size() != mSize || imLeft32f.size() != mSize)
-    {
-        std::cout << "convertTo3DPoints: Wrong input size." << std::endl;
-        return false;
-    }
+    int32_t width  = imLeft.cols;
+    int32_t height = imLeft.rows;
+    cv::Size imsize(width, height);
 
     mvpPts3D.clear();
-
-    int32_t width = mSize.width;
-    int32_t height = mSize.height;
 
     cv::Mat V = cv::Mat(4,1, CV_64FC1);
     cv::Mat pos = cv::Mat(4,1, CV_64FC1);
@@ -106,7 +95,7 @@ bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat imLeft3
             V.at<double>(2,0) = double(d);
             V.at<double>(3,0) = 1.;
  
-            pos = mMatQ*V;
+            pos = Q*V;
 
             double X = pos.at<double>(0,0) / pos.at<double>(3,0);
             double Y = pos.at<double>(1,0) / pos.at<double>(3,0);

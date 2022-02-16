@@ -32,6 +32,7 @@
 #include "LocalMapping.h"
 #include "LoopClosing.h"
 #include "Viewer.h"
+#include "roadmarking.hpp"
 #include <thread>
 #include <pangolin/pangolin.h>
 #include <iomanip>
@@ -46,8 +47,8 @@ namespace RM_SLAM
 {
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
-               const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false),mbActivateLocalizationMode(false),
-        mbDeactivateLocalizationMode(false), mbStart(false)
+               const bool bUseViewer, const cv::Mat &Q):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false),mbActivateLocalizationMode(false),
+        mbDeactivateLocalizationMode(false), mbStart(false), mMatQ(Q)
 {
     // Output welcome message
     cout << endl <<
@@ -127,6 +128,25 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     mpLoopCloser->SetTracker(mpTracker);
     mpLoopCloser->SetLocalMapper(mpLocalMapper);
+
+    if(!mMatQ.empty())
+    {
+        float fImScale = fsSettings["Camera.scale"];
+        if( fImScale <= 0.0 && fImScale > 1.0 )
+            fImScale = 1.0;
+            
+        int rows = fsSettings["LEFT.height"];
+        int cols = fsSettings["LEFT.width"];
+
+        rows = static_cast<int>(rows*fImScale);
+        cols = static_cast<int>(cols*fImScale);
+
+        mMatQ.at<double>(0,3) *= fImScale;
+        mMatQ.at<double>(1,3) *= fImScale;
+        mMatQ.at<double>(2,3) *= fImScale;
+
+        mpRoadMark = new RoadMarking();
+    }
 }
 
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)
@@ -223,7 +243,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
     }
     }
 
-    cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft, imRight, labelLeft, labelRight, timestamp);
+    cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft, imRight, labelLeft, labelRight, timestamp, mpRoadMark, mMatQ);
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;

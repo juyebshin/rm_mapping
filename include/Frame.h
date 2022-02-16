@@ -39,6 +39,9 @@ class MapPoint;
 class KeyFrame;
 // class ORBVocabulary;
 class ORBextractor;
+class Color2ID;
+class RMPoint;
+class RoadMarking;
 
 class Frame
 {
@@ -50,6 +53,9 @@ public:
 
     // Constructor for stereo cameras.
     Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+
+    // Constructor for stereo cameras with road marking
+    Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &labelLeft, const cv::Mat &labelRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, RoadMarking* pRoadMark, const cv::Mat &Q);
 
     // Constructor for RGB-D cameras.
     Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
@@ -152,6 +158,9 @@ public:
     // MapPoints associated to keypoints, NULL pointer if no association.
     std::vector<MapPoint*> mvpMapPoints;
 
+    // Road marking points
+    std::vector<RMPoint*> mvpRMPoints;
+
     // Flag to identify outlier associations.
     std::vector<bool> mvbOutlier;
 
@@ -186,6 +195,9 @@ public:
     static float mnMaxY;
 
     static bool mbInitialComputations;
+
+    Color2ID* mpColorMap;
+    RoadMarking* mpRoadMark;
 
 
 private:

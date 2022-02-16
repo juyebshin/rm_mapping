@@ -12,18 +12,14 @@ namespace RM_SLAM
 class RoadMarking
 {
 public:
-    RoadMarking(const cv::Size &imSize, const cv::Mat &Q);
+    RoadMarking();
 
-    bool runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat& maskLeft, const cv::Mat& maskRight);
+    bool runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat& maskLeft, const cv::Mat& maskRight, const cv::Mat& Q);
 
     std::vector<cv::Point3d *> getAllPoints() const;
-    cv::Size getImSize() const { return mSize; }
 
 protected:
-    bool convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat imLeft32f);
-
-    cv::Size mSize;
-    cv::Mat mMatQ;
+    bool convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat imLeft32f, const cv::Mat& Q);
 
     std::vector<cv::Point3d *> mvpPts3D;
 };

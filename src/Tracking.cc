@@ -39,6 +39,7 @@
 #include "Optimizer.h"
 #include "PnPsolver.h"
 #include "Viewer.h"
+#include "color2id.hpp"
 
 #include <iostream>
 #include <vector>
@@ -161,6 +162,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
             mDepthMapFactor = 1.0f/mDepthMapFactor;
     }
 
+    mpColorMap = new Color2ID();
 }
 
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
@@ -222,7 +224,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
 }
 
 // Road marking
-cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRectRight,const cv::Mat &labelRectLeft,const cv::Mat &labelRectRight, const double &timestamp)
+cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRectRight,const cv::Mat &labelRectLeft,const cv::Mat &labelRectRight, const double &timestamp, RoadMarking *pRoadMark, const cv::Mat &Q)
 {
     mImColor = imRectLeft;
     cv::resize(mImColor, mImColor, cv::Size(), mfImScale, mfImScale, CV_INTER_LINEAR);
@@ -265,7 +267,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRec
 
     if(mLabelColor.channels()==3)
     {
-        // mLabelGray = mpColorMap->mapping(mLabelColor);
+        mLabelGray = mpColorMap->mapping(mLabelColor);
     }
     else
     {
@@ -275,7 +277,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRec
     // right
     if(imLabelRight.channels()==3)
     {
-        // mLabelGrayRight = mpColorMap->mapping(imLabelRight);
+        imLabelRight = mpColorMap->mapping(imLabelRight);
     }
     else
     {
@@ -283,7 +285,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRec
         exit(-1);
     }
 
-    mCurrentFrame = Frame(mImGray,imGrayRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+    mCurrentFrame = Frame(mImGray,imGrayRight,mLabelGray,imLabelRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth, pRoadMark, Q);
 
     Track();
 

@@ -81,11 +81,11 @@ int main(int argc, char **argv)
     fsSettings["LEFT.K"] >> K_l;
     fsSettings["RIGHT.K"] >> K_r;
 
-    fsSettings["LEFT.P"] >> P_l;
-    fsSettings["RIGHT.P"] >> P_r;
+    // fsSettings["LEFT.P"] >> P_l;
+    // fsSettings["RIGHT.P"] >> P_r;
 
-    fsSettings["LEFT.R"] >> R_l;
-    fsSettings["RIGHT.R"] >> R_r;
+    // fsSettings["LEFT.R"] >> R_l;
+    // fsSettings["RIGHT.R"] >> R_r;
 
     fsSettings["LEFT.D"] >> D_l;
     fsSettings["RIGHT.D"] >> D_r;
@@ -95,14 +95,22 @@ int main(int argc, char **argv)
     int rows_r = fsSettings["RIGHT.height"];
     int cols_r = fsSettings["RIGHT.width"];
 
-    if(K_l.empty() || K_r.empty() || P_l.empty() || P_r.empty() || R_l.empty() || R_r.empty() || D_l.empty() || D_r.empty() ||
-            rows_l==0 || rows_r==0 || cols_l==0 || cols_r==0)
+    cv::Mat R12, t12;
+    fsSettings["Stereo.R"] >> R12;
+    fsSettings["Stereo.t"] >> t12;
+
+    cout << "R12\n" << R12 << endl;
+    cout << "t12\n" << t12 << endl;
+
+    if(K_l.empty() || K_r.empty() /*|| P_l.empty() || P_r.empty() || R_l.empty() || R_r.empty()*/ || D_l.empty() || D_r.empty() ||
+            rows_l==0 || rows_r==0 || cols_l==0 || cols_r==0 || R12.empty() || t12.empty())
     {
         cerr << "ERROR: Calibration parameters to rectify stereo are missing!" << endl;
         return -1;
     }
 
-    cv::Mat M1l,M2l,M1r,M2r;
+    cv::Mat M1l,M2l,M1r,M2r,Q;
+    cv::stereoRectify(K_l, D_l, K_r, D_r, cv::Size(cols_l,rows_l), R12, t12, R_l, R_r, P_l, P_r, Q, cv::CALIB_ZERO_DISPARITY, 0);
     cv::initUndistortRectifyMap(K_l,D_l,R_l,P_l.rowRange(0,3).colRange(0,3),cv::Size(cols_l,rows_l),CV_32F,M1l,M2l);
     cv::initUndistortRectifyMap(K_r,D_r,R_r,P_r.rowRange(0,3).colRange(0,3),cv::Size(cols_r,rows_r),CV_32F,M1r,M2r);
 

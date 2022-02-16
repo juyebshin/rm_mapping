@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <mutex>
+#include <vector>
 
 namespace RM_SLAM
 {
@@ -21,11 +22,14 @@ public:
 
     cv::Mat drawFrame();
     cv::Mat drawLabel();
+    void drawRoadMarkings();
 
 protected:
 
     cv::Mat mIm;
     cv::Mat mLabel;
+
+    std::vector<cv::Point3d *> mvpPts3D; // todo: move this to MapDrawer
 
     std::mutex mMutex;
 };

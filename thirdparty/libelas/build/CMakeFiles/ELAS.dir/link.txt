@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -msse3 -O3 -DNDEBUG  -shared -Wl,-soname,libELAS.so -o ../lib/libELAS.so CMakeFiles/ELAS.dir/src/descriptor.cpp.o CMakeFiles/ELAS.dir/src/elas.cpp.o CMakeFiles/ELAS.dir/src/filter.cpp.o CMakeFiles/ELAS.dir/src/matrix.cpp.o CMakeFiles/ELAS.dir/src/triangle.cpp.o 

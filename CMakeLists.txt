@@ -66,6 +66,7 @@ ${Pangolin_INCLUDE_DIRS}
 ${PYTHON_INCLUDE_DIRS}
 ${Boost_INCLUDE_DIRS}
 ${OpenCV_INCLUDE_DIRS}
+${PROJECT_SOURCE_DIR}/thirdparty/libelas/src
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
@@ -75,6 +76,8 @@ src/viewer.cpp
 src/system.cpp
 src/tracking.cpp
 src/framedrawer.cpp
+src/roadmarking.cpp
+src/color2id.cpp
 # src/System.cc
 # src/Tracking.cc
 # src/LocalMapping.cc
@@ -104,6 +107,7 @@ ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
 ${PROJECT_SOURCE_DIR}/thirdparty/DBoW2/lib/libDBoW2.so
 ${PROJECT_SOURCE_DIR}/thirdparty/g2o/lib/libg2o.so
+${PROJECT_SOURCE_DIR}/thirdparty/libelas/lib/libELAS.so
 #/usr/lib/x86_64-linux-gnu/libpython3.6m.so
 ${PYTHON_LIBRARIES}
 ${Boost_LIBRARIES}

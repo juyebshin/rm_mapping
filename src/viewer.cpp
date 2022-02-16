@@ -116,6 +116,9 @@ void Viewer::run()
         d_cam.Activate(s_cam);
         glClearColor(1.0f,1.0f,1.0f,1.0f);
 
+        if(menuShowPoints)
+            mpFrameDrawer->drawRoadMarkings();
+
         // draw with gl functions
         glLineWidth(3);
         glBegin(GL_LINES);

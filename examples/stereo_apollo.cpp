@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     vector<string> vstrLabelLeft;
     vector<string> vstrLabelRight;
     if(bLabel)
-        loadLabels(string(argv[3]), vstrLabelLeft, vstrLabelRight, ssStart.str());
+        loadLabels(string(argv[5]), vstrLabelLeft, vstrLabelRight, ssStart.str());
 
     cout << "image left size: " << vstrImageLeft.size() << ", label left size: " << vstrLabelLeft.size() << endl;
 

@@ -221,6 +221,75 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
     return mCurrentFrame.mTcw.clone();
 }
 
+// Road marking
+cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRectRight,const cv::Mat &labelRectLeft,const cv::Mat &labelRectRight, const double &timestamp)
+{
+    mImColor = imRectLeft;
+    cv::resize(mImColor, mImColor, cv::Size(), mfImScale, mfImScale, CV_INTER_LINEAR);
+    mImColor.copyTo(mImGray);
+    cv::Mat imGrayRight = imRectRight;
+    cv::resize(imGrayRight, imGrayRight, cv::Size(), mfImScale, mfImScale, cv::INTER_LINEAR);
+
+    if(mImGray.channels()==3)
+    {
+        if(mbRGB)
+        {
+            cvtColor(mImGray,mImGray,CV_RGB2GRAY);
+            cvtColor(imGrayRight,imGrayRight,CV_RGB2GRAY);
+        }
+        else
+        {
+            cvtColor(mImGray,mImGray,CV_BGR2GRAY);
+            cvtColor(imGrayRight,imGrayRight,CV_BGR2GRAY);
+        }
+    }
+    else if(mImGray.channels()==4)
+    {
+        if(mbRGB)
+        {
+            cvtColor(mImGray,mImGray,CV_RGBA2GRAY);
+            cvtColor(imGrayRight,imGrayRight,CV_RGBA2GRAY);
+        }
+        else
+        {
+            cvtColor(mImGray,mImGray,CV_BGRA2GRAY);
+            cvtColor(imGrayRight,imGrayRight,CV_BGRA2GRAY);
+        }
+    }
+
+    mLabelColor = labelRectLeft;
+    cv::resize(mLabelColor, mLabelColor, cv::Size(), mfImScale, mfImScale, cv::INTER_NEAREST);
+    // mLabelColor.copyTo(mLabelGray);
+    cv::Mat imLabelRight = labelRectRight;
+    cv::resize(imLabelRight, imLabelRight, cv::Size(), mfImScale, mfImScale, cv::INTER_NEAREST);
+
+    if(mLabelColor.channels()==3)
+    {
+        // mLabelGray = mpColorMap->mapping(mLabelColor);
+    }
+    else
+    {
+        cerr << "ERROR: left label is not 3 channel (RGB)" << endl;
+        exit(-1);
+    }
+    // right
+    if(imLabelRight.channels()==3)
+    {
+        // mLabelGrayRight = mpColorMap->mapping(imLabelRight);
+    }
+    else
+    {
+        cerr << "ERROR: right label is not 3 channel (RGB)" << endl;
+        exit(-1);
+    }
+
+    mCurrentFrame = Frame(mImGray,imGrayRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+
+    Track();
+
+    return mCurrentFrame.mTcw.clone();
+}
+
 
 cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp)
 {

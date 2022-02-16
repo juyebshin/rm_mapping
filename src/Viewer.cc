@@ -83,6 +83,7 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowKeyFrames("menu.Show KeyFrames",true,true);
     pangolin::Var<bool> menuShowGraph("menu.Show Graph",true,true);
     pangolin::Var<bool> menuLocalizationMode("menu.Localization Mode",false,true); // false,true
+    pangolin::Var<bool> menuDrawPoints("menu.Draw Points",false,true);
     pangolin::Var<bool> menuStart("menu.Start",false,false);
     pangolin::Var<bool> menuPause("menu.Pause",false,false);
     pangolin::Var<bool> menuReset("menu.Reset",false,false);
@@ -152,7 +153,7 @@ void Viewer::Run()
 
         pangolin::FinishFrame();
 
-        cv::Mat im = mpFrameDrawer->DrawFrame();
+        cv::Mat im = mpFrameDrawer->DrawFrame(menuDrawPoints);
         cv::imshow("ORB-SLAM2: Current Frame",im);
         cv::waitKey(mT);
 

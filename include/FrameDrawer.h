@@ -44,8 +44,8 @@ public:
     void Update(Tracking *pTracker);
 
     // Draw last processed frame.
-    cv::Mat DrawFrame();
-    cv::Mat DrawLabel();
+    cv::Mat DrawFrame(const bool showPoints = true);
+    // cv::Mat DrawLabel();
 
 protected:
 

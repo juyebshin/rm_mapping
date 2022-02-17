@@ -94,6 +94,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     DistCoef.copyTo(mDistCoef);
 
     mbf = fSettings["Camera.bf"];
+    mbf *= mfImScale;
 
     float fps = fSettings["Camera.fps"];
     if(fps==0)

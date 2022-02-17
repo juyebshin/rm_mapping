@@ -22,6 +22,9 @@
 #include "MapPoint.h"
 #include "KeyFrame.h"
 #include "Map.h"
+
+#include "roadmarking.hpp"
+
 #include <pangolin/pangolin.h>
 #include <mutex>
 
@@ -49,6 +52,7 @@ void MapDrawer::DrawMapPoints()
 {
     const vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
     const vector<MapPoint*> &vpRefMPs = mpMap->GetReferenceMapPoints(); // todo
+    const vector<RMPoint*> &vpRMPs = mpMap->GetAllRMPoints();
 
     set<MapPoint*> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
 
@@ -81,6 +85,28 @@ void MapDrawer::DrawMapPoints()
 
     }
 
+    glEnd();
+}
+
+// Road markings
+void MapDrawer::DrawRMPoints()
+{
+    const vector<RMPoint*> &vpRMPs = mpMap->GetAllRMPoints();
+
+    if(vpRMPs.empty())
+        return;
+
+    glPointSize(mPointSize);
+    glBegin(GL_POINTS);
+    glColor3f(0.0,0.0,0.0); // all map points, r=0 g=0 b=0
+
+    for(size_t i=0, iend=vpRMPs.size(); i<iend;i++)
+    {
+        if(vpRMPs[i]->isBad())
+            continue;
+        cv::Mat pos = vpRMPs[i]->GetWorldPos();
+        glVertex3f(pos.at<float>(0),pos.at<float>(1),pos.at<float>(2));
+    }
     glEnd();
 }
 

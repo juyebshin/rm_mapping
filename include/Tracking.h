@@ -41,9 +41,10 @@ class MapDrawer;
 class LocalMapping;
 class LoopClosing;
 class System;
+class Initializer;
 class RoadMarking;
 class Color2ID;
-class Initializer;
+class RMPoint;
 
 class KeyFrameDatabase;
 // class ORBVocabulary;

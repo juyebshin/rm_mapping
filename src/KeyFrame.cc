@@ -26,6 +26,9 @@
 #include "KeyFrameDatabase.h"
 #include "ORBVocabulary.h"
 #include "ORBextractor.h"
+
+#include "roadmarking.hpp"
+
 #include <mutex>
 
 namespace RM_SLAM
@@ -46,7 +49,9 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
     mvInvLevelSigma2(F.mvInvLevelSigma2), mnMinX(F.mnMinX), mnMinY(F.mnMinY), mnMaxX(F.mnMaxX),
     mnMaxY(F.mnMaxY), mK(F.mK), mvpMapPoints(F.mvpMapPoints), mpKeyFrameDB(pKFDB),
     mpORBvocabulary(F.mpORBvocabulary), mbFirstConnection(true), mpParent(NULL), mbNotErase(false),
-    mbToBeErased(false), mbBad(false), mHalfBaseline(F.mb/2), mpMap(pMap)
+    mbToBeErased(false), mbBad(false), mHalfBaseline(F.mb/2), mpMap(pMap),
+    // road marking
+    mvpRMPoints(F.mvpRMPoints)
 {
     mnId=nNextId++;
 
@@ -289,6 +294,34 @@ MapPoint* KeyFrame::GetMapPoint(const size_t &idx)
 {
     unique_lock<mutex> lock(mMutexFeatures);
     return mvpMapPoints[idx];
+}
+
+// RMPoint observation functions
+void KeyFrame::AddRMPoint(RMPoint* pRMP, const size_t &idx)
+{
+    unique_lock<mutex> lock(mMutexFeatures);
+    mvpRMPoints[idx]=pRMP;
+}
+
+std::set<RMPoint*> KeyFrame::GetRMPoints()
+{
+    unique_lock<mutex> lock(mMutexFeatures);
+    set<RMPoint*> s;
+    for(size_t i=0, iend=mvpRMPoints.size(); i<iend; i++)
+    {
+        if(!mvpRMPoints[i])
+            continue;
+        RMPoint* pRMP = mvpRMPoints[i];
+        if(!pRMP->isBad())
+            s.insert(pRMP);
+    }
+    return s;
+}
+
+RMPoint* KeyFrame::GetRMPoint(const size_t &idx)
+{
+    unique_lock<mutex> lock(mMutexFeatures);
+    return mvpRMPoints[idx];
 }
 
 void KeyFrame::UpdateConnections()

@@ -40,6 +40,7 @@
 #include "PnPsolver.h"
 #include "Viewer.h"
 #include "color2id.hpp"
+#include "roadmarking.hpp"
 
 #include <iostream>
 #include <vector>
@@ -630,8 +631,22 @@ void Tracking::StereoInitialization()
                 mCurrentFrame.mvpMapPoints[i]=pNewMP;
             }
         }
+        for(int i = 0; i < mCurrentFrame.Nrm; i++)
+        {
+            cout << "road marking idx: " << i << " / " << mCurrentFrame.Nrm-1 << endl;
+            cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
+            RMPoint* pNewRMP = new RMPoint(rm3D, pKFini, mpMap);
+            pNewRMP->AddObservation(pKFini, i);
+            pKFini->AddRMPoint(pNewRMP, i);
+            // since nLevel (ORB feature) is in it
+            // pNewRMP->UpdateNormalAndDepth();
+            mpMap->AddRMPoint(pNewRMP);
+
+            mCurrentFrame.mvpRMPoints[i] = pNewRMP;
+        }
 
         cout << "New map created with " << mpMap->MapPointsInMap() << " points" << endl;
+        cout << "New map created with " << mpMap->RMPointsInMap() << " road marking points" << endl;
 
         mpLocalMapper->InsertKeyFrame(pKFini);
 

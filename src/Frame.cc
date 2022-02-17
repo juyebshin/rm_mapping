@@ -54,7 +54,8 @@ Frame::Frame(const Frame &frame)
      mpReferenceKF(frame.mpReferenceKF), mnScaleLevels(frame.mnScaleLevels),
      mfScaleFactor(frame.mfScaleFactor), mfLogScaleFactor(frame.mfLogScaleFactor),
      mvScaleFactors(frame.mvScaleFactors), mvInvScaleFactors(frame.mvInvScaleFactors),
-     mvLevelSigma2(frame.mvLevelSigma2), mvInvLevelSigma2(frame.mvInvLevelSigma2)
+     mvLevelSigma2(frame.mvLevelSigma2), mvInvLevelSigma2(frame.mvInvLevelSigma2),
+     mvpRMPoints(frame.mvpRMPoints), Nrm(frame.Nrm), mvpRM3dpoints(frame.mvpRM3dpoints) // road marking
 {
     for(int i=0;i<FRAME_GRID_COLS;i++)
         for(int j=0; j<FRAME_GRID_ROWS; j++)
@@ -181,6 +182,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &label
 
     AssignFeaturesToGrid();
 
+    Nrm = 0;
     if(pRoadMark)
     {
         if(!pRoadMark->runELAS(imLeft, imRight, labelLeft, labelRight, Q))
@@ -188,6 +190,11 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &label
                 cerr << "ERROR: road marking reconstruction failed" << endl;
                 exit(-1);
         }
+
+        mvpRM3dpoints = pRoadMark->getAllPoints();
+
+        Nrm = mvpRM3dpoints.size();
+        mvpRMPoints = vector<RMPoint*>(Nrm,static_cast<RMPoint*>(NULL));   
     }
 }
 
@@ -751,6 +758,22 @@ cv::Mat Frame::UnprojectStereo(const int &i)
         const float y = (v-cy)*z*invfy;
         cv::Mat x3Dc = (cv::Mat_<float>(3,1) << x, y, z);
         return mRwc*x3Dc+mOw;
+    }
+    else
+        return cv::Mat();
+}
+
+cv::Mat Frame::RM3Dpoint(const int &i)
+{
+    if(Nrm)
+    {
+        cv::Point3d pt = *mvpRM3dpoints[i];
+        const double x = pt.x;
+        const double y = pt.y;
+        const double z = pt.z;
+        // road marking pixel 3D points in camera referential
+        cv::Mat rm3Dc = (cv::Mat_<float>(3,1) << x, y, z);
+        return mRwc*rm3Dc+mOw;
     }
     else
         return cv::Mat();

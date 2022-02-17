@@ -84,6 +84,7 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowGraph("menu.Show Graph",true,true);
     pangolin::Var<bool> menuLocalizationMode("menu.Localization Mode",false,true); // false,true
     pangolin::Var<bool> menuDrawPoints("menu.Draw Points",false,true);
+    pangolin::Var<bool> menuShowRMPoints("menu.Show Road Markings",true,true);
     pangolin::Var<bool> menuStart("menu.Start",false,false);
     pangolin::Var<bool> menuPause("menu.Pause",false,false);
     pangolin::Var<bool> menuReset("menu.Reset",false,false);
@@ -150,6 +151,8 @@ void Viewer::Run()
             mpMapDrawer->DrawKeyFrames(menuShowKeyFrames,menuShowGraph);
         if(menuShowPoints)
             mpMapDrawer->DrawMapPoints();
+        if(menuShowRMPoints)
+            mpMapDrawer->DrawRMPoints();
 
         pangolin::FinishFrame();
 
@@ -162,13 +165,14 @@ void Viewer::Run()
         {
             menuShowGraph = true;
             menuShowKeyFrames = true;
-            menuShowPoints = true;
+            menuShowPoints = false;
             menuLocalizationMode = false;
             if(bLocalizationMode)
                 mpSystem->DeactivateLocalizationMode();
             bLocalizationMode = false;
             bFollow = true;
             menuFollowCamera = true;
+            menuShowRMPoints = true;
             mpSystem->Reset();
             menuReset = false;
         }

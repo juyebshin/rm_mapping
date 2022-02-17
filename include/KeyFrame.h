@@ -39,6 +39,8 @@ class KeyFrameDatabase;
 // class ORBVocabulary;
 class ORBextractor;
 
+class RMPoint;
+
 class KeyFrame
 {
 public:
@@ -88,6 +90,11 @@ public:
     std::vector<MapPoint*> GetMapPointMatches();
     int TrackedMapPoints(const int &minObs);
     MapPoint* GetMapPoint(const size_t &idx);
+
+    // RMPoint observation functions
+    void AddRMPoint(RMPoint* pRMP, const size_t &idx);
+    std::set<RMPoint*> GetRMPoints();
+    RMPoint* GetRMPoint(const size_t &idx);
 
     // KeyPoint functions
     std::vector<size_t> GetFeaturesInArea(const float &x, const float  &y, const float  &r) const;
@@ -200,6 +207,9 @@ protected:
 
     // MapPoints associated to keypoints
     std::vector<MapPoint*> mvpMapPoints;
+
+    // RMPoints
+    std::vector<RMPoint*> mvpRMPoints;
 
     // BoW
     KeyFrameDatabase* mpKeyFrameDB;

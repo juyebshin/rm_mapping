@@ -104,6 +104,9 @@ public:
     // Backprojects a keypoint (if stereo/depth info available) into 3D world coordinates.
     cv::Mat UnprojectStereo(const int &i);
 
+    // Returns RM 3D points in cv Mat
+    cv::Mat RM3Dpoint(const int &i);
+
 public:
     // Vocabulary used for relocalization.
     ORBVocabulary* mpORBvocabulary;
@@ -136,12 +139,17 @@ public:
 
     // Number of KeyPoints.
     int N;
+    // Number of RMPoints
+    int Nrm;
 
     // Vector of keypoints (original for visualization) and undistorted (actually used by the system).
     // In the stereo case, mvKeysUn is redundant as images must be rectified.
     // In the RGB-D case, RGB images can be distorted.
     std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
     std::vector<cv::KeyPoint> mvKeysUn;
+
+    // Road marking 3D points
+    std::vector<cv::Point3d*> mvpRM3dpoints;
 
     // Corresponding stereo coordinate and depth for each keypoint.
     // "Monocular" keypoints have a negative value.

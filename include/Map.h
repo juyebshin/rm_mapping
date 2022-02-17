@@ -32,6 +32,7 @@ namespace RM_SLAM
 
 class MapPoint;
 class KeyFrame;
+class RMPoint;
 
 class Map
 {
@@ -57,6 +58,12 @@ public:
 
     void clear();
 
+    // Road markings
+    void AddRMPoint(RMPoint* pRMP);
+    void EraseRMPoint(RMPoint* pRMP);
+    std::vector<RMPoint*> GetAllRMPoints();
+    long unsigned int RMPointsInMap();
+
     std::vector<KeyFrame*> mvpKeyFrameOrigins;
 
     std::mutex mMutexMapUpdate;
@@ -67,6 +74,8 @@ public:
 protected:
     std::set<MapPoint*> mspMapPoints;
     std::set<KeyFrame*> mspKeyFrames;
+    // Road markings
+    std::set<RMPoint*> mspRMPoints;
 
     std::vector<MapPoint*> mvpReferenceMapPoints;
 

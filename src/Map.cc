@@ -20,6 +20,7 @@
 
 #include "Map.h"
 #include "KeyFrame.h"
+#include "roadmarking.hpp"
 
 #include <mutex>
 
@@ -126,11 +127,41 @@ void Map::clear()
     for(set<KeyFrame*>::iterator sit=mspKeyFrames.begin(), send=mspKeyFrames.end(); sit!=send; sit++)
         delete *sit;
 
+    // Road marking
+    for(set<RMPoint*>::iterator sit = mspRMPoints.begin(), send=mspRMPoints.end(); sit != send; sit++)
+        delete *sit;
+
     mspMapPoints.clear();
     mspKeyFrames.clear();
+    mspRMPoints.clear();
     mnMaxKFid = 0;
     mvpReferenceMapPoints.clear();
     mvpKeyFrameOrigins.clear();
+}
+
+// Road markings
+void Map::AddRMPoint(RMPoint* pRMP)
+{
+    unique_lock<mutex> lock(mMutexMap);
+    mspRMPoints.insert(pRMP);
+}
+
+void Map::EraseRMPoint(RMPoint* pRMP)
+{
+    unique_lock<mutex> lock(mMutexMap);
+    mspRMPoints.erase(pRMP);
+}
+
+std::vector<RMPoint*> Map::GetAllRMPoints()
+{
+    unique_lock<mutex> lock(mMutexMap);
+    return vector<RMPoint*>(mspRMPoints.begin(),mspRMPoints.end());
+}
+
+long unsigned int Map::RMPointsInMap()
+{
+    unique_lock<mutex> lock(mMutexMap);
+    return mspRMPoints.size();
 }
 
 } //namespace RM_SLAM

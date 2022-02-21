@@ -374,7 +374,7 @@ void Tracking::Track()
     {
         cout << "Initializing..." << endl;
         if(mSensor==System::STEREO || mSensor==System::RGBD)
-            StereoInitialization(); // Label done 2021-06-08 22:42
+            StereoInitialization(); // Road marking done 
         else
             MonocularInitialization();
 
@@ -634,7 +634,7 @@ void Tracking::StereoInitialization()
         }
         for(int i = 0; i < mCurrentFrame.Nrm; i++)
         {
-            cout << "road marking idx: " << i << " / " << mCurrentFrame.Nrm-1 << endl;
+            // cout << "road marking idx: " << i << " / " << mCurrentFrame.Nrm-1 << endl;
             cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
             RMPoint* pNewRMP = new RMPoint(rm3D, pKFini, mpMap);
             pNewRMP->AddObservation(pKFini, i);
@@ -871,6 +871,20 @@ void Tracking::CheckReplacedInLastFrame()
             }
         }
     }
+    // Road marking
+    // for(int i = 0; i < mLastFrame.Nrm; i++)
+    // {
+    //     RMPoint* pRMP = mLastFrame.mvpRMPoints[i];
+
+    //     if(pRMP)
+    //     {
+    //         RMPoint* pRep = pRMP->GetReplaced();
+    //         if(pRep)
+    //         {
+    //             mLastFrame.mvpRMPoints[i] = pRep;
+    //         }
+    //     }
+    // }
 }
 
 
@@ -914,6 +928,20 @@ bool Tracking::TrackReferenceKeyFrame()
                 nmatchesMap++;
         }
     }
+    // Road marking points
+    // for(int i = 0; i < mCurrentFrame.Nrm; i++)
+    // {
+    //     // cout << "road marking idx: " << i << " / " << mCurrentFrame.Nrm-1 << endl;
+    //     cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
+    //     RMPoint* pNewRMP = new RMPoint(rm3D, pKFini, mpMap);
+    //     pNewRMP->AddObservation(pKFini, i);
+    //     pKFini->AddRMPoint(pNewRMP, i);
+    //     // since nLevel (ORB feature) is in it
+    //     // pNewRMP->UpdateNormalAndDepth();
+    //     mpMap->AddRMPoint(pNewRMP);
+
+    //     mCurrentFrame.mvpRMPoints[i] = pNewRMP;
+    // }
 
     return nmatchesMap>=10;
 }
@@ -983,6 +1011,29 @@ void Tracking::UpdateLastFrame()
         if(vDepthIdx[j].first>mThDepth && nPoints>100)
             break;
     }
+
+    // Road marking
+    // for(size_t i = 0; i < mLastFrame.Nrm; i++)
+    // {
+    //     bool bCreateNew = false;
+
+    //     RMPoint* pRMP = mLastFrame.mvpRMPoints[i];
+    //     if(!pRMP)
+    //         bCreateNew = true;
+    //     else if(pRMP->Observations < 1)
+    //     {
+    //         bCreateNew = true;
+    //     }
+
+    //     if(bCreateNew)
+    //     {
+    //         cv::Mat x3D = mLastFrame.RM3Dpoint(i);
+    //         RMPoint* pNewRMP = new RMPoint(x3D, mpMap, &mLastFrame, i);
+    //         mLastFrame.mvpRMPoints[i] = pNewRMP;
+
+    //         mlpTemporalRMPoints.push_back(pNewRMP);
+    //     }
+    // }
 }
 
 bool Tracking::TrackWithMotionModel()
@@ -1254,6 +1305,34 @@ void Tracking::CreateNewKeyFrame()
                     break;
             }
         }
+
+        // Road marking
+        for(size_t i = 0; i < mCurrentFrame.Nrm; i++)
+        {
+            bool bCreateNew = false;
+
+            RMPoint* pRMP = mCurrentFrame.mvpRMPoints[i];
+            if(!pRMP)
+                bCreateNew = true;
+            else if(pRMP->Observations() < 1)
+            {
+                bCreateNew = true;
+                mCurrentFrame.mvpRMPoints[i] = static_cast<RMPoint*>(NULL);
+            }
+
+            if(bCreateNew)
+            {
+                cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
+                RMPoint* pNewRMP = new RMPoint(rm3D, pKF, mpMap);
+                pNewRMP->AddObservation(pKF, i);
+                pKF->AddRMPoint(pNewRMP, i);
+                mpMap->AddRMPoint(pNewRMP);
+
+                mCurrentFrame.mvpRMPoints[i] = pNewRMP;
+            }
+        }
+
+        mpMap->SetReferenceRMPoints(mCurrentFrame.mvpRMPoints);
     }
 
     mpLocalMapper->InsertKeyFrame(pKF);
@@ -1320,6 +1399,7 @@ void Tracking::UpdateLocalMap()
 {
     // This is for visualization
     mpMap->SetReferenceMapPoints(mvpLocalMapPoints); // todo
+    // mpMap->SetReferenceRMPoints(mvp)
 
     // Update
     UpdateLocalKeyFrames();
@@ -1349,6 +1429,8 @@ void Tracking::UpdateLocalPoints()
             }
         }
     }
+
+    // Road marking
 }
 
 

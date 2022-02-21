@@ -152,6 +152,12 @@ void Map::EraseRMPoint(RMPoint* pRMP)
     mspRMPoints.erase(pRMP);
 }
 
+void Map::SetReferenceRMPoints(const std::vector<RMPoint*> &vpRMPs)
+{
+    unique_lock<mutex> lock(mMutexMap);
+    mvpReferenceRMPoints = vpRMPs;
+}
+
 std::vector<RMPoint*> Map::GetAllRMPoints()
 {
     unique_lock<mutex> lock(mMutexMap);
@@ -162,6 +168,12 @@ long unsigned int Map::RMPointsInMap()
 {
     unique_lock<mutex> lock(mMutexMap);
     return mspRMPoints.size();
+}
+
+std::vector<RMPoint*> Map::GetReferenceRMPoints()
+{
+    unique_lock<mutex> lock(mMutexMap);
+    return mvpReferenceRMPoints; // todo
 }
 
 } //namespace RM_SLAM

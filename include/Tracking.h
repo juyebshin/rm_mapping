@@ -225,6 +225,7 @@ protected:
     bool mbRGB;
 
     std::list<MapPoint*> mlpTemporalPoints;
+    std::list<RMPoint*> mlpTemporalRMPoints;
 };
 
 } //namespace RM_SLAM

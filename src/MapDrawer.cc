@@ -52,7 +52,6 @@ void MapDrawer::DrawMapPoints()
 {
     const vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
     const vector<MapPoint*> &vpRefMPs = mpMap->GetReferenceMapPoints(); // todo
-    const vector<RMPoint*> &vpRMPs = mpMap->GetAllRMPoints();
 
     set<MapPoint*> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
 
@@ -92,21 +91,39 @@ void MapDrawer::DrawMapPoints()
 void MapDrawer::DrawRMPoints()
 {
     const vector<RMPoint*> &vpRMPs = mpMap->GetAllRMPoints();
+    const vector<RMPoint*> &vpRefRMPs = mpMap->GetReferenceRMPoints();
+
+    set<RMPoint*> spRefRMPs(vpRefRMPs.begin(), vpRefRMPs.end());
 
     if(vpRMPs.empty())
         return;
 
     glPointSize(mPointSize);
     glBegin(GL_POINTS);
-    glColor3f(0.0,0.0,0.0); // all map points, r=0 g=0 b=0
+    glColor3f(0.0,0.0,0.0); // all rm points, r=0 g=0 b=0
 
     for(size_t i=0, iend=vpRMPs.size(); i<iend;i++)
     {
-        if(vpRMPs[i]->isBad())
+        if(vpRMPs[i]->isBad() || spRefRMPs.count(vpRMPs[i]))
             continue;
         cv::Mat pos = vpRMPs[i]->GetWorldPos();
         glVertex3f(pos.at<float>(0),pos.at<float>(1),pos.at<float>(2));
     }
+    glEnd();
+
+    glPointSize(mPointSize);
+    glBegin(GL_POINTS);
+    glColor3f(1.0,0.0,0.0); // current rm points, r=1, g=0, b=0
+
+    for(set<RMPoint*>::iterator sit=spRefRMPs.begin(), send=spRefRMPs.end(); sit!=send; sit++)
+    {
+        if((*sit)->isBad())
+            continue;
+        cv::Mat pos = (*sit)->GetWorldPos();
+        glVertex3f(pos.at<float>(0),pos.at<float>(1),pos.at<float>(2));
+
+    }
+
     glEnd();
 }
 

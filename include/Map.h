@@ -61,8 +61,10 @@ public:
     // Road markings
     void AddRMPoint(RMPoint* pRMP);
     void EraseRMPoint(RMPoint* pRMP);
+    void SetReferenceRMPoints(const std::vector<RMPoint*> &vpRMPs);
     std::vector<RMPoint*> GetAllRMPoints();
     long unsigned int RMPointsInMap();
+    std::vector<RMPoint*> GetReferenceRMPoints();
 
     std::vector<KeyFrame*> mvpKeyFrameOrigins;
 
@@ -76,6 +78,7 @@ protected:
     std::set<KeyFrame*> mspKeyFrames;
     // Road markings
     std::set<RMPoint*> mspRMPoints;
+    std::vector<RMPoint*> mvpReferenceRMPoints;
 
     std::vector<MapPoint*> mvpReferenceMapPoints;
 

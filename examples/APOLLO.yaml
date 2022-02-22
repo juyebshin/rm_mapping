@@ -137,6 +137,6 @@ Viewer.CameraSize: 0.15
 Viewer.CameraLineWidth: 2
 Viewer.ViewpointX: 0
 Viewer.ViewpointY: -100
-Viewer.ViewpointZ: -100
-Viewer.ViewpointF: 2000
+Viewer.ViewpointZ: -1
+Viewer.ViewpointF: 1000
 

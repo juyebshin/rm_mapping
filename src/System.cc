@@ -48,7 +48,7 @@ namespace RM_SLAM
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
                const bool bUseViewer, const cv::Mat &Q):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false),mbActivateLocalizationMode(false),
-        mbDeactivateLocalizationMode(false), mbStart(false), mMatQ(Q)
+        mbDeactivateLocalizationMode(false), mbStart(!bUseViewer), mMatQ(Q)
 {
     // Output welcome message
     cout << endl <<

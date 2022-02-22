@@ -24,6 +24,9 @@ public:
     void SetWorldPos(const cv::Mat &Pos);
     cv::Mat GetWorldPos();
 
+    void SetRMId(const unsigned int &id);
+    unsigned int GetRMId();
+
     cv::Mat GetNormal();
     KeyFrame* GetReferenceKeyFrame();
 
@@ -120,6 +123,9 @@ protected:
 
      Map* mpMap;
 
+    //  Road marking
+    long unsigned int mnRMId;
+
      std::mutex mMutexPos;
      std::mutex mMutexFeatures;
 }; // class RMPoint
@@ -134,10 +140,13 @@ public:
     std::vector<cv::Point3d *> getAllPoints() const;
     long unsigned int RMPionts() const;
 
+    std::vector<unsigned int> getAllRMIds() const;
+
 protected:
-    bool convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat imLeft32f, const cv::Mat& Q);
+    bool convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLeft, const cv::Mat imLeft32f, const cv::Mat& Q);
 
     std::vector<cv::Point3d *> mvpPts3D;
+    std::vector<unsigned int> mvnId;
 }; // class RoadMarking
 } // namespace RM_SLAM
 

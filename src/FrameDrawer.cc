@@ -158,7 +158,7 @@ cv::Mat FrameDrawer::DrawFrame(const bool showPoints)
         cv::resize(im, im, cv::Size(0, 0), 0.3, 0.3);
     if(!label.empty())
     {
-        cv::addWeighted(im, 1.0, label, 0.5, 0.0, im);
+        cv::addWeighted(im, 0.5, label, 0.5, 0.0, im);
     }
     DrawTextInfo(im,state, imWithInfo);
 

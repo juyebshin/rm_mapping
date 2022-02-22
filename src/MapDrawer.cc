@@ -22,6 +22,7 @@
 #include "MapPoint.h"
 #include "KeyFrame.h"
 #include "Map.h"
+#include "color2id.hpp"
 
 #include "roadmarking.hpp"
 
@@ -45,6 +46,9 @@ MapDrawer::MapDrawer(Map* pMap, const string &strSettingPath):mpMap(pMap)
     mPointSize = fSettings["Viewer.PointSize"];
     mCameraSize = fSettings["Viewer.CameraSize"];
     mCameraLineWidth = fSettings["Viewer.CameraLineWidth"];
+
+    Color2ID map;
+    mvColorMap = map.getColorMap();
 
 }
 
@@ -100,13 +104,17 @@ void MapDrawer::DrawRMPoints()
 
     glPointSize(mPointSize);
     glBegin(GL_POINTS);
-    glColor3f(0.0,0.0,0.0); // all rm points, r=0 g=0 b=0
+    // glColor3f(0.0,0.0,0.0); // all rm points, r=0 g=0 b=0
 
     for(size_t i=0, iend=vpRMPs.size(); i<iend;i++)
     {
         if(vpRMPs[i]->isBad() || spRefRMPs.count(vpRMPs[i]))
             continue;
         cv::Mat pos = vpRMPs[i]->GetWorldPos();
+        unsigned int id = vpRMPs[i]->GetRMId();
+        // cout << "id: " << id << endl;
+        cv::Vec3b color = mvColorMap[id]; // b g r
+        glColor3f((float)color[2]/255.f, (float)color[1]/255.f, (float)color[0]/255.f); // r g b
         glVertex3f(pos.at<float>(0),pos.at<float>(1),pos.at<float>(2));
     }
     glEnd();

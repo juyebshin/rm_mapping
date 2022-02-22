@@ -150,6 +150,8 @@ public:
 
     // Road marking 3D points
     std::vector<cv::Point3d*> mvpRM3dpoints;
+    // Road marking id
+    std::vector<unsigned int> mvnRMIds;
 
     // Corresponding stereo coordinate and depth for each keypoint.
     // "Monocular" keypoints have a negative value.

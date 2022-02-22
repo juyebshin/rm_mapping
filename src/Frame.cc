@@ -192,6 +192,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &label
         }
 
         mvpRM3dpoints = pRoadMark->getAllPoints();
+        mvnRMIds = pRoadMark->getAllRMIds();
 
         Nrm = mvpRM3dpoints.size();
         mvpRMPoints = vector<RMPoint*>(Nrm,static_cast<RMPoint*>(NULL));   

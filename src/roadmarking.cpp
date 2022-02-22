@@ -70,6 +70,16 @@ cv::Mat RMPoint::GetWorldPos()
     return mWorldPos.clone();
 }
 
+void RMPoint::SetRMId(const unsigned int &id)
+{
+    mnRMId = id;
+}
+
+unsigned int RMPoint::GetRMId()
+{
+    return mnRMId;
+}
+
 cv::Mat RMPoint::GetNormal()
 {
     unique_lock<mutex> lock(mMutexPos);
@@ -427,12 +437,12 @@ bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const c
     //     }
     // }
     
-    return convertTo3DPoints(imLeft, imLeft32f, Q);
+    return convertTo3DPoints(imLeft, maskLeft, imLeft32f, Q);
 }
 
 std::vector<cv::Point3d *> RoadMarking::getAllPoints() const
 {
-    return std::vector<cv::Point3d*>(mvpPts3D.begin(),mvpPts3D.end());
+    return std::vector<cv::Point3d*>(mvpPts3D.begin(), mvpPts3D.end());
 }
 
 long unsigned int RoadMarking::RMPionts() const
@@ -440,13 +450,19 @@ long unsigned int RoadMarking::RMPionts() const
     return mvpPts3D.size();
 }
 
-bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat imLeft32f, const cv::Mat& Q)
+std::vector<unsigned int> RoadMarking::getAllRMIds() const
+{
+    return std::vector<unsigned int>(mvnId.begin(), mvnId.end());
+}
+
+bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLeft, const cv::Mat imLeft32f, const cv::Mat& Q)
 {
     int32_t width  = imLeft.cols;
     int32_t height = imLeft.rows;
     cv::Size imsize(width, height);
 
     mvpPts3D.clear();
+    mvnId.clear();
 
     cv::Mat V = cv::Mat(4,1, CV_64FC1);
     cv::Mat pos = cv::Mat(4,1, CV_64FC1);
@@ -455,7 +471,7 @@ bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat imLeft3
     {
         for(int u = 0; u < width; ++u)
         {
-            float d = imLeft32f.at<float>(v,u);
+            float d = imLeft32f.at<float>(v, u);
             if(d < 2.0) continue;
 
             V.at<double>(0,0) = double(u);
@@ -475,6 +491,10 @@ bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat imLeft3
             point->z = Z;
 
             mvpPts3D.push_back(point);
+
+            // Road marking id
+            unsigned int id = maskLeft.at<uchar>(v, u);
+            mvnId.push_back(id);
         }
     }
 

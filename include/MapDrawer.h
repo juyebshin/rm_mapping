@@ -61,6 +61,9 @@ private:
     cv::Mat mCameraPose;
 
     std::mutex mMutexCamera;
+
+    // Road marking
+    std::vector<cv::Vec3b> mvColorMap;
 };
 
 } //namespace RM_SLAM

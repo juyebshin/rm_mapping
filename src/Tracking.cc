@@ -287,6 +287,23 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRec
         exit(-1);
     }
 
+    // check gray label histogram
+    // cv::MatND histogram;
+
+    // const int* channel_numbers = { 0 };
+    // float channel_range[] = { 0.0, 255.0 };
+    // const float* channel_ranges = channel_range;
+    // int number_bins = 256;
+
+    // cv::calcHist(&mLabelGray, 1, channel_numbers, cv::Mat(), histogram, 1, &number_bins, &channel_ranges);
+    // cout << "label histogram size: " << histogram.size() << endl;
+    // for(int i = 0; i < histogram.size().area(); i++)
+    // {
+    //     cout << i << ": " << histogram.at<unsigned int>(i) << ", ";
+    // }
+    // cout << endl;
+    // cout << "label histogram: " << histogram.t() << endl;
+
     mCurrentFrame = Frame(mImGray,imGrayRight,mLabelGray,imLabelRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth, pRoadMark, Q);
 
     Track();
@@ -636,7 +653,9 @@ void Tracking::StereoInitialization()
         {
             // cout << "road marking idx: " << i << " / " << mCurrentFrame.Nrm-1 << endl;
             cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
+            unsigned int nId = mCurrentFrame.mvnRMIds[i];
             RMPoint* pNewRMP = new RMPoint(rm3D, pKFini, mpMap);
+            pNewRMP->SetRMId(nId);
             pNewRMP->AddObservation(pKFini, i);
             pKFini->AddRMPoint(pNewRMP, i);
             // since nLevel (ORB feature) is in it
@@ -1323,7 +1342,9 @@ void Tracking::CreateNewKeyFrame()
             if(bCreateNew)
             {
                 cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
+                unsigned int nId = mCurrentFrame.mvnRMIds[i];
                 RMPoint* pNewRMP = new RMPoint(rm3D, pKF, mpMap);
+                pNewRMP->SetRMId(nId);
                 pNewRMP->AddObservation(pKF, i);
                 pKF->AddRMPoint(pNewRMP, i);
                 mpMap->AddRMPoint(pNewRMP);

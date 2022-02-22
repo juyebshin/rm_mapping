@@ -52,8 +52,8 @@ cv::Mat Color2ID::mapping(const cv::Mat& label) const
 {
     cv::Mat id = cv::Mat(label.size(), CV_8UC1);
 
-    for(int row = 0; row < label.size().height; ++row){
-        for(int col = 0; col < label.size().width; ++col){
+    for(int row = 0; row < label.rows; ++row){
+        for(int col = 0; col < label.cols; ++col){
             auto it = std::find(colorMap.begin(), colorMap.end(), label.at<cv::Vec3b>(row,col));
             auto idx = it - colorMap.begin();
             assert(idx >= (uchar)0 && idx <= (uchar)255);

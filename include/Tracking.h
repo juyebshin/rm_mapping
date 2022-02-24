@@ -98,8 +98,10 @@ public:
     Frame mCurrentFrame;
     cv::Mat mImGray;
     cv::Mat mImColor;
+    cv::Mat mImRight;
     cv::Mat mLabelGray;
     cv::Mat mLabelColor;
+    cv::Mat mLabelRight;
 
     // Initialization Variables (Monocular)
     std::vector<int> mvIniLastMatches;

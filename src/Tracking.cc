@@ -233,6 +233,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRec
     mImColor.copyTo(mImGray);
     cv::Mat imGrayRight = imRectRight;
     cv::resize(imGrayRight, imGrayRight, cv::Size(), mfImScale, mfImScale, cv::INTER_LINEAR);
+    imGrayRight.copyTo(mImRight);
 
     if(mImGray.channels()==3)
     {
@@ -266,6 +267,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRec
     // mLabelColor.copyTo(mLabelGray);
     cv::Mat imLabelRight = labelRectRight;
     cv::resize(imLabelRight, imLabelRight, cv::Size(), mfImScale, mfImScale, cv::INTER_NEAREST);
+    imLabelRight.copyTo(mLabelRight);
 
     if(mLabelColor.channels()==3)
     {
@@ -653,6 +655,8 @@ void Tracking::StereoInitialization()
         {
             // cout << "road marking idx: " << i << " / " << mCurrentFrame.Nrm-1 << endl;
             cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
+            // float z = rm3D.at<float>(2);
+            // if(z > 30.) continue;
             unsigned int nId = mCurrentFrame.mvnRMIds[i];
             RMPoint* pNewRMP = new RMPoint(rm3D, pKFini, mpMap);
             pNewRMP->SetRMId(nId);
@@ -680,6 +684,7 @@ void Tracking::StereoInitialization()
         mCurrentFrame.mpReferenceKF = pKFini;
 
         mpMap->SetReferenceMapPoints(mvpLocalMapPoints); // todo check done
+        mpMap->SetReferenceRMPoints(mCurrentFrame.mvpRMPoints);
 
         mpMap->mvpKeyFrameOrigins.push_back(pKFini);
 
@@ -1342,6 +1347,8 @@ void Tracking::CreateNewKeyFrame()
             if(bCreateNew)
             {
                 cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
+                // float z = rm3D.at<float>(2);
+                // if(z > 30.) continue;
                 unsigned int nId = mCurrentFrame.mvnRMIds[i];
                 RMPoint* pNewRMP = new RMPoint(rm3D, pKF, mpMap);
                 pNewRMP->SetRMId(nId);

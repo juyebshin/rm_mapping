@@ -44,7 +44,7 @@ public:
     void Update(Tracking *pTracker);
 
     // Draw last processed frame.
-    cv::Mat DrawFrame(const bool showPoints = true);
+    cv::Mat DrawFrame(const bool showPoints = true, const bool showStereo = true);
     // cv::Mat DrawLabel();
 
 protected:
@@ -54,6 +54,8 @@ protected:
     // Info of the frame to be drawn
     cv::Mat mIm;
     cv::Mat mLabel;
+    cv::Mat mImRight;
+    cv::Mat mLabelRight;
     int N;
     std::vector<cv::KeyPoint> mvCurrentKeys;
     std::vector<bool> mvbMap, mvbVO;

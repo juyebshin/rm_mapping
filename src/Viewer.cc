@@ -84,9 +84,12 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowGraph("menu.Show Graph",true,true);
     pangolin::Var<bool> menuLocalizationMode("menu.Localization Mode",false,true); // false,true
     pangolin::Var<bool> menuDrawPoints("menu.Draw Points",false,true);
+    pangolin::Var<bool> menuDrawStereo("menu.Draw Stereo",true,true);
     pangolin::Var<bool> menuShowRMPoints("menu.Show Road Markings",true,true);
     pangolin::Var<bool> menuStart("menu.Start",false,false);
     pangolin::Var<bool> menuPause("menu.Pause",false,false);
+    pangolin::Var<bool> menuRecord("menu.Record",false,false);
+    pangolin::Var<bool> menuStopRecord("menu.Stop Recording",false,false);
     pangolin::Var<bool> menuReset("menu.Reset",false,false);
 
     // Define Camera Render Object (for view / scene browsing)
@@ -108,6 +111,9 @@ void Viewer::Run()
     bool bStart = false;
     bool bFollow = true;
     bool bLocalizationMode = false;
+    bool bRecord = false;
+
+    cv::VideoWriter videoFrame, videoMap;
 
     while(1)
     {
@@ -156,9 +162,56 @@ void Viewer::Run()
 
         pangolin::FinishFrame();
 
-        cv::Mat im = mpFrameDrawer->DrawFrame(menuDrawPoints);
+        cv::Mat im = mpFrameDrawer->DrawFrame(menuDrawPoints, menuDrawStereo);
         cv::imshow("ORB-SLAM2: Current Frame",im);
         cv::waitKey(mT);
+
+        if(menuRecord && !bRecord)
+        {
+            bRecord = true;
+            menuRecord = false;
+            menuStopRecord = false;
+            videoFrame.open("frame.mp4", cv::VideoWriter::fourcc('X', '2', '6', '4'), 1e3/mT, im.size());
+            videoMap.open("map.mp4", cv::VideoWriter::fourcc('X', '2', '6', '4'), 1e3/mT, cv::Size(1024-175, 768));
+            cout << "Start recording!" << endl;
+        }
+        else if(menuStopRecord && bRecord)
+        {
+            bRecord = false;
+            menuStopRecord = false;
+            menuRecord = false;
+            if(videoFrame.isOpened())
+            {
+                cout << "Stop recording frame..." << endl;
+                videoFrame.release();
+            }
+            if(videoMap.isOpened())
+            {
+                cout << "Stop recording map..." << endl;
+                videoMap.release();
+            }
+        }
+        else if(bRecord)
+        {
+            if(videoFrame.isOpened())
+            {
+                videoFrame << im;
+            }
+            if(videoMap.isOpened())
+            {
+                cv::Mat pixels(768, 1024, CV_8UC3);
+                glReadPixels(0, 0, 1024, 768, GL_RGB, GL_UNSIGNED_BYTE, pixels.data);
+                cv::Mat cv_pixels(pixels.size(), CV_8UC3);
+                for(int y = 0; y < pixels.rows; y++)
+                    for(int x = 0; x < pixels.cols; x++)
+                    {
+                        cv_pixels.at<cv::Vec3b>(y,x)[2] = pixels.at<cv::Vec3b>(768-y-1,x)[0];
+                        cv_pixels.at<cv::Vec3b>(y,x)[1] = pixels.at<cv::Vec3b>(768-y-1,x)[1];
+                        cv_pixels.at<cv::Vec3b>(y,x)[0] = pixels.at<cv::Vec3b>(768-y-1,x)[2];
+                    }
+                videoMap << cv_pixels(cv::Rect(175, 0, pixels.cols-175, pixels.rows));
+            }
+        }
 
 
         if(menuReset)
@@ -215,6 +268,17 @@ void Viewer::Run()
 
         if(CheckFinish())
             break;
+    }
+
+    if(videoFrame.isOpened())
+    {
+        cout << "Stop recording frame..." << endl;
+        videoFrame.release();
+    }
+    if(videoMap.isOpened())
+    {
+        cout << "Stop recording map..." << endl;
+        videoMap.release();
     }
 
     SetFinish();

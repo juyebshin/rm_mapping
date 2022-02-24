@@ -121,7 +121,7 @@ void MapDrawer::DrawRMPoints()
 
     glPointSize(mPointSize);
     glBegin(GL_POINTS);
-    glColor3f(1.0,0.0,0.0); // current rm points, r=1, g=0, b=0
+    glColor3f(0.0,1.0,0.0); // current rm points, r=1, g=0, b=0
 
     for(set<RMPoint*>::iterator sit=spRefRMPs.begin(), send=spRefRMPs.end(); sit!=send; sit++)
     {

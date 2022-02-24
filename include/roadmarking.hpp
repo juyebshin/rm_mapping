@@ -135,7 +135,7 @@ class RoadMarking
 public:
     RoadMarking();
 
-    bool runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat& maskLeft, const cv::Mat& maskRight, const cv::Mat& Q);
+    bool runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat& maskLeft, const cv::Mat& maskRight, const cv::Mat& Q, double dth = 100.);
 
     std::vector<cv::Point3d *> getAllPoints() const;
     long unsigned int RMPionts() const;
@@ -143,7 +143,7 @@ public:
     std::vector<unsigned int> getAllRMIds() const;
 
 protected:
-    bool convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLeft, const cv::Mat imLeft32f, const cv::Mat& Q);
+    bool convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLeft, const cv::Mat imLeft32f, const cv::Mat& Q, double dth);
 
     std::vector<cv::Point3d *> mvpPts3D;
     std::vector<unsigned int> mvnId;

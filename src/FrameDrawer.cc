@@ -40,9 +40,10 @@ FrameDrawer::FrameDrawer(Map* pMap):mpMap(pMap)
     mLabel = cv::Mat(376,1241,CV_8UC3, cv::Scalar(0,0,0));
 }
 
-cv::Mat FrameDrawer::DrawFrame(const bool showPoints)
+cv::Mat FrameDrawer::DrawFrame(const bool showPoints, const bool showStereo)
 {
     cv::Mat im, label;
+    cv::Mat imRight, labelRight;
     vector<cv::KeyPoint> vIniKeys; // Initialization: KeyPoints in reference frame
     vector<int> vMatches; // Initialization: correspondeces with reference keypoints
     vector<cv::KeyPoint> vCurrentKeys; // KeyPoints in current frame
@@ -58,6 +59,8 @@ cv::Mat FrameDrawer::DrawFrame(const bool showPoints)
 
         mIm.copyTo(im);
         mLabel.copyTo(label);
+        mImRight.copyTo(imRight);
+        mLabelRight.copyTo(labelRight);
 
         if(mState==Tracking::NOT_INITIALIZED)
         {
@@ -156,10 +159,26 @@ cv::Mat FrameDrawer::DrawFrame(const bool showPoints)
     cv::Mat imWithInfo;
     if (im.rows > 2000)
         cv::resize(im, im, cv::Size(0, 0), 0.3, 0.3);
+    if (imRight.rows > 2000)
+        cv::resize(imRight, imRight, cv::Size(0, 0), 0.3, 0.3);
     if(!label.empty())
     {
         cv::addWeighted(im, 0.5, label, 0.5, 0.0, im);
     }
+    if(!labelRight.empty())
+    {
+        cv::addWeighted(imRight, 0.5, labelRight, 0.5, 0.0, imRight);
+        if(showStereo)
+        {
+            cv::Mat temp(im.rows, im.cols*2, CV_8UC3);
+
+            im.copyTo(temp(cv::Rect(0, 0, im.cols, im.rows)));
+            imRight.copyTo(temp(cv::Rect(imRight.cols, 0, imRight.cols, imRight.rows)));
+            im = temp;
+        }
+    }
+
+
     DrawTextInfo(im,state, imWithInfo);
 
     return imWithInfo;
@@ -208,6 +227,8 @@ void FrameDrawer::Update(Tracking *pTracker)
     unique_lock<mutex> lock(mMutex);
     pTracker->mImColor.copyTo(mIm);
     pTracker->mLabelColor.copyTo(mLabel);
+    pTracker->mImRight.copyTo(mImRight);
+    pTracker->mLabelRight.copyTo(mLabelRight);
     mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;
     N = mvCurrentKeys.size();
     mvbVO = vector<bool>(N,false);

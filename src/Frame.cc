@@ -185,7 +185,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &label
     Nrm = 0;
     if(pRoadMark)
     {
-        if(!pRoadMark->runELAS(imLeft, imRight, labelLeft, labelRight, Q))
+        if(!pRoadMark->runELAS(imLeft, imRight, labelLeft, labelRight, Q, 15.))
         {
                 cerr << "ERROR: road marking reconstruction failed" << endl;
                 exit(-1);

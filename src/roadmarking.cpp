@@ -384,7 +384,7 @@ RoadMarking::RoadMarking()
 
 }
 
-bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat& maskLeft, const cv::Mat& maskRight, const cv::Mat& Q)
+bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat& maskLeft, const cv::Mat& maskRight, const cv::Mat& Q, double dth)
 {
     std::cout << "image size: " << imLeft.size() << std::endl;
     // check for correct size
@@ -415,17 +415,17 @@ bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const c
     elas.process(imLeft.data, imRight.data, imLeft32f.ptr<float>(0), imRight32f.ptr<float>(0), dims, maskLeft.data, maskRight.data);
 
     // find maximum disparity for scaling output disparity images to [0..255]
-    float disp_max = 0;
-    for(int row = 0; row < height; ++row)
-    {
-        for(int col = 0; col < width; ++col)
-        {
-            if(imLeft32f.at<float>(row,col) > disp_max)
-                disp_max = imLeft32f.at<float>(row,col);
-            if(imRight32f.at<float>(row,col) > disp_max)
-                disp_max = imRight32f.at<float>(row,col);
-        }
-    }
+    // float disp_max = 0;
+    // for(int row = 0; row < height; ++row)
+    // {
+    //     for(int col = 0; col < width; ++col)
+    //     {
+    //         if(imLeft32f.at<float>(row,col) > disp_max)
+    //             disp_max = imLeft32f.at<float>(row,col);
+    //         if(imRight32f.at<float>(row,col) > disp_max)
+    //             disp_max = imRight32f.at<float>(row,col);
+    //     }
+    // }
 
     // // copy float to uchar
     // for(int row = 0; row < height; ++row)
@@ -437,7 +437,7 @@ bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const c
     //     }
     // }
     
-    return convertTo3DPoints(imLeft, maskLeft, imLeft32f, Q);
+    return convertTo3DPoints(imLeft, maskLeft, imLeft32f, Q, dth);
 }
 
 std::vector<cv::Point3d *> RoadMarking::getAllPoints() const
@@ -455,7 +455,7 @@ std::vector<unsigned int> RoadMarking::getAllRMIds() const
     return std::vector<unsigned int>(mvnId.begin(), mvnId.end());
 }
 
-bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLeft, const cv::Mat imLeft32f, const cv::Mat& Q)
+bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLeft, const cv::Mat imLeft32f, const cv::Mat& Q, double dth)
 {
     int32_t width  = imLeft.cols;
     int32_t height = imLeft.rows;
@@ -472,7 +472,7 @@ bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLe
         for(int u = 0; u < width; ++u)
         {
             float d = imLeft32f.at<float>(v, u);
-            if(d < 2.0) continue;
+            if(d < 10.) continue;
 
             V.at<double>(0,0) = double(u);
             V.at<double>(1,0) = double(v);
@@ -484,6 +484,8 @@ bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLe
             double X = pos.at<double>(0,0) / pos.at<double>(3,0);
             double Y = pos.at<double>(1,0) / pos.at<double>(3,0);
             double Z = pos.at<double>(2,0) / pos.at<double>(3,0);
+
+            if(Z > dth) continue;
 
             cv::Point3d* point = new cv::Point3d();
             point->x = X;

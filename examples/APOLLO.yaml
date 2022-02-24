@@ -16,7 +16,7 @@ Camera.p1: 0.0
 Camera.p2: 0.0
 
 # Camera frames per second 
-Camera.fps: 30.0
+Camera.fps: 10.0
 
 # stereo baseline times fx
 # just baseline

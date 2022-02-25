@@ -768,10 +768,10 @@ cv::Mat Frame::RM3Dpoint(const int &i)
 {
     if(Nrm)
     {
-        cv::Point3d pt = *mvpRM3dpoints[i];
-        const double x = pt.x;
-        const double y = pt.y;
-        const double z = pt.z;
+        cv::Point3f pt = *mvpRM3dpoints[i];
+        const float x = pt.x;
+        const float y = pt.y;
+        const float z = pt.z;
         // road marking pixel 3D points in camera referential
         cv::Mat rm3Dc = (cv::Mat_<float>(3,1) << x, y, z);
         return mRwc*rm3Dc+mOw;

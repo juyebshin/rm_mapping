@@ -18,11 +18,13 @@ class Frame;
 class RMPoint
 {
 public:
-    RMPoint(const cv::Mat &pos, KeyFrame* pRefKF, Map* pMap);
+    RMPoint(const cv::Mat &Pos, KeyFrame* pRefKF, Map* pMap, const cv::Mat &refPos);
     RMPoint(const cv::Mat &Pos,  Map* pMap, Frame* pFrame, const int &idxF);
 
     void SetWorldPos(const cv::Mat &Pos);
     cv::Mat GetWorldPos();
+
+    cv::Mat GetCameraPos();
 
     void SetRMId(const unsigned int &id);
     unsigned int GetRMId();
@@ -97,6 +99,9 @@ protected:
      // Position in absolute coordinates
      cv::Mat mWorldPos;
 
+     // Position in camera coordinates
+     cv::Mat mCameraPos;
+
      // Keyframes observing the point and associated index in keyframe
      std::map<KeyFrame*,size_t> mObservations;
 
@@ -137,7 +142,7 @@ public:
 
     bool runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat& maskLeft, const cv::Mat& maskRight, const cv::Mat& Q, double dth = 100.);
 
-    std::vector<cv::Point3d *> getAllPoints() const;
+    std::vector<cv::Point3f *> getAllPoints() const;
     long unsigned int RMPionts() const;
 
     std::vector<unsigned int> getAllRMIds() const;
@@ -145,7 +150,7 @@ public:
 protected:
     bool convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLeft, const cv::Mat imLeft32f, const cv::Mat& Q, double dth);
 
-    std::vector<cv::Point3d *> mvpPts3D;
+    std::vector<cv::Point3f *> mvpPts3D;
     std::vector<unsigned int> mvnId;
 }; // class RoadMarking
 } // namespace RM_SLAM

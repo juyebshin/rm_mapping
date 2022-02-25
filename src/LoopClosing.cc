@@ -35,6 +35,7 @@
 #include "MapPoint.h"
 #include "Tracking.h"
 #include "LocalMapping.h"
+#include "roadmarking.hpp"
 
 #include <mutex>
 #include <thread>
@@ -513,6 +514,30 @@ void LoopClosing::CorrectLoop()
                 pMPi->mnCorrectedByKF = mpCurrentKF->mnId;
                 pMPi->mnCorrectedReference = pKFi->mnId;
                 pMPi->UpdateNormalAndDepth();
+            }
+
+            // RMPoints
+            set<RMPoint*> spRMPsi = pKFi->GetRMPoints();
+            vector<RMPoint*> vpRMPsi(spRMPsi.begin(), spRMPsi.end());
+            for(size_t iRMP = 0, endRMPi = vpRMPsi.size(); iRMP < endRMPi; iRMP++)
+            {
+                RMPoint* pRMPi = vpRMPsi[iRMP];
+                if(!pRMPi)
+                    continue;
+                if(pRMPi->isBad())
+                    continue;
+                if(pRMPi->mnCorrectedByKF==mpCurrentKF->mnId)
+                    continue;
+
+                // Project with non-corrected pose and project back with corrected pose
+                cv::Mat P3Dw = pRMPi->GetWorldPos();
+                Eigen::Matrix<double,3,1> eigP3Dw = Converter::toVector3d(P3Dw);
+                Eigen::Matrix<double,3,1> eigCorrectedP3Dw = g2oCorrectedSwi.map(g2oSiw.map(eigP3Dw));
+
+                cv::Mat cvCorrectedP3Dw = Converter::toCvMat(eigCorrectedP3Dw);
+                pRMPi->SetWorldPos(cvCorrectedP3Dw);
+                pRMPi->mnCorrectedByKF = mpCurrentKF->mnId;
+                pRMPi->mnCorrectedReference = pKFi->mnId;
             }
 
             // Update keyframe pose with corrected Sim3. First transform Sim3 to SE3 (scale translation)

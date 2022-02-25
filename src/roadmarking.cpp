@@ -15,13 +15,14 @@ namespace RM_SLAM
 long unsigned int RMPoint::nNextId=0;
 mutex RMPoint::mGlobalMutex;
 
-RMPoint::RMPoint(const cv::Mat &Pos, KeyFrame *pRefKF, Map* pMap):
+RMPoint::RMPoint(const cv::Mat &Pos, KeyFrame *pRefKF, Map* pMap, const cv::Mat &refPos):
     mnFirstKFid(pRefKF->mnId), mnFirstFrame(pRefKF->mnFrameId), nObs(0), mnTrackReferenceForFrame(0),
     mnLastFrameSeen(0), mnBALocalForKF(0), mnFuseCandidateForKF(0), mnLoopPointForKF(0), mnCorrectedByKF(0),
     mnCorrectedReference(0), mnBAGlobalForKF(0), mpRefKF(pRefKF), mnVisible(1), mnFound(1), mbBad(false),
     mpReplaced(static_cast<RMPoint*>(NULL)), mfMinDistance(0), mfMaxDistance(0), mpMap(pMap)
 {
     Pos.copyTo(mWorldPos);
+    refPos.copyTo(mCameraPos);
     
     mNormalVector = cv::Mat::zeros(3,1,CV_32F);
 
@@ -68,6 +69,12 @@ cv::Mat RMPoint::GetWorldPos()
 {
     unique_lock<mutex> lock(mMutexPos);
     return mWorldPos.clone();
+}
+
+cv::Mat RMPoint::GetCameraPos()
+{
+    unique_lock<mutex> lock(mMutexPos);
+    return mCameraPos.clone();
 }
 
 void RMPoint::SetRMId(const unsigned int &id)
@@ -440,9 +447,9 @@ bool RoadMarking::runELAS(const cv::Mat &imLeft, const cv::Mat &imRight, const c
     return convertTo3DPoints(imLeft, maskLeft, imLeft32f, Q, dth);
 }
 
-std::vector<cv::Point3d *> RoadMarking::getAllPoints() const
+std::vector<cv::Point3f *> RoadMarking::getAllPoints() const
 {
-    return std::vector<cv::Point3d*>(mvpPts3D.begin(), mvpPts3D.end());
+    return std::vector<cv::Point3f*>(mvpPts3D.begin(), mvpPts3D.end());
 }
 
 long unsigned int RoadMarking::RMPionts() const
@@ -471,6 +478,10 @@ bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLe
     {
         for(int u = 0; u < width; ++u)
         {
+            // Road marking id
+            unsigned int id = maskLeft.at<uchar>(v, u);
+            if(id < 200) continue; // ignore if background
+
             float d = imLeft32f.at<float>(v, u);
             if(d < 10.) continue;
 
@@ -487,15 +498,12 @@ bool RoadMarking::convertTo3DPoints(const cv::Mat &imLeft, const cv::Mat &maskLe
 
             if(Z > dth) continue;
 
-            cv::Point3d* point = new cv::Point3d();
-            point->x = X;
-            point->y = Y;
-            point->z = Z;
+            cv::Point3f* point = new cv::Point3f();
+            point->x = float(X);
+            point->y = float(Y);
+            point->z = float(Z);
 
             mvpPts3D.push_back(point);
-
-            // Road marking id
-            unsigned int id = maskLeft.at<uchar>(v, u);
             mvnId.push_back(id);
         }
     }

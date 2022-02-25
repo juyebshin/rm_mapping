@@ -149,7 +149,7 @@ public:
     std::vector<cv::KeyPoint> mvKeysUn;
 
     // Road marking 3D points
-    std::vector<cv::Point3d*> mvpRM3dpoints;
+    std::vector<cv::Point3f*> mvpRM3dpoints;
     // Road marking id
     std::vector<unsigned int> mvnRMIds;
 

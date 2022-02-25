@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     const int nImages = vstrImageLeft.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    RM_SLAM::System SLAM(argv[1], argv[2], RM_SLAM::System::STEREO, true, Q); // Q
+    RM_SLAM::System SLAM(argv[1], argv[2], RM_SLAM::System::STEREO, false, Q); // Q
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -223,8 +223,8 @@ int main(int argc, char **argv)
         cout << "track time: " << ttrack << " T: " << T << endl;
         if(T-ttrack > 90.0) // more then 1.5 minutes
             break;
-        if(ttrack<T)
-            usleep((T-ttrack)*1e6);
+        // if(ttrack<T)
+        //     usleep((T-ttrack)*1e6);
     }
 
     SLAM.Shutdown();

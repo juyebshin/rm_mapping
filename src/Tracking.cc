@@ -654,11 +654,17 @@ void Tracking::StereoInitialization()
         for(int i = 0; i < mCurrentFrame.Nrm; i++)
         {
             // cout << "road marking idx: " << i << " / " << mCurrentFrame.Nrm-1 << endl;
+            // RMPoints in world coordinate
             cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
-            // float z = rm3D.at<float>(2);
-            // if(z > 30.) continue;
+            // RMPoints in camera coordinate
+            cv::Point3f pt = *(mCurrentFrame.mvpRM3dpoints[i]);
+            const float x = pt.x;
+            const float y = pt.y;
+            const float z = pt.z;
+            // road marking pixel 3D points in camera coordinate
+            cv::Mat rm3Dc = (cv::Mat_<float>(3,1) << x, y, z);
             unsigned int nId = mCurrentFrame.mvnRMIds[i];
-            RMPoint* pNewRMP = new RMPoint(rm3D, pKFini, mpMap);
+            RMPoint* pNewRMP = new RMPoint(rm3D, pKFini, mpMap, rm3Dc);
             pNewRMP->SetRMId(nId);
             pNewRMP->AddObservation(pKFini, i);
             pKFini->AddRMPoint(pNewRMP, i);
@@ -1347,10 +1353,16 @@ void Tracking::CreateNewKeyFrame()
             if(bCreateNew)
             {
                 cv::Mat rm3D = mCurrentFrame.RM3Dpoint(i);
+                cv::Point3f pt = *(mCurrentFrame.mvpRM3dpoints[i]);
+                const float x = pt.x;
+                const float y = pt.y;
+                const float z = pt.z;
+                // road marking pixel 3D points in camera referential
+                cv::Mat rm3Dc = (cv::Mat_<float>(3,1) << x, y, z);
                 // float z = rm3D.at<float>(2);
                 // if(z > 30.) continue;
                 unsigned int nId = mCurrentFrame.mvnRMIds[i];
-                RMPoint* pNewRMP = new RMPoint(rm3D, pKF, mpMap);
+                RMPoint* pNewRMP = new RMPoint(rm3D, pKF, mpMap, rm3Dc);
                 pNewRMP->SetRMId(nId);
                 pNewRMP->AddObservation(pKF, i);
                 pKF->AddRMPoint(pNewRMP, i);

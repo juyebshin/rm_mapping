@@ -125,13 +125,14 @@ int main(int argc, char **argv)
     cout << "stereo Q =\n" << Q << endl; 
 
     const int nImages = vstrImageLeft.size();
+    int nImagesRec = nImages;
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    RM_SLAM::System SLAM(argv[1], argv[2], RM_SLAM::System::STEREO, false, Q); // Q
+    RM_SLAM::System SLAM(argv[1], argv[2], RM_SLAM::System::STEREO, true, Q); // Q
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
-    vTimesTrack.resize(nImages);
+    vTimesTrack.resize(nImages, 1000.f);
 
     cout << endl << "-------" << endl;
     cout << "Start processing sequence ..." << endl;
@@ -222,9 +223,12 @@ int main(int argc, char **argv)
 
         cout << "track time: " << ttrack << " T: " << T << endl;
         if(T-ttrack > 90.0) // more then 1.5 minutes
+        {
+            nImagesRec = ni + 1;
             break;
-        // if(ttrack<T)
-        //     usleep((T-ttrack)*1e6);
+        }
+        if(ttrack<T)
+            usleep((T-ttrack)*1e6);
     }
 
     SLAM.Shutdown();
@@ -232,16 +236,20 @@ int main(int argc, char **argv)
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());
     float totaltime = 0;
-    for(int ni=0; ni<nImages; ni++)
+    for(int ni=0; ni<nImagesRec; ni++)
     {
         totaltime+=vTimesTrack[ni];
     }
     cout << "-------" << endl << endl;
-    cout << "median tracking time: " << vTimesTrack[nImages/2] << endl;
-    cout << "mean tracking time: " << totaltime/nImages << endl;
+    cout << "median tracking time: " << vTimesTrack[nImagesRec/2] << endl;
+    cout << "mean tracking time: " << totaltime/nImagesRec << endl;
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    stringstream fileTUM, fileKITTI;
+    fileTUM << "KeyFrameTrajectoryTum_Record" << ssStart.str() << ".txt";
+    fileKITTI << "FrameTrajectoryKITTI_Record" << ssStart.str() << ".txt";
+    SLAM.SaveKeyFrameTrajectoryTUM(fileTUM.str());
+    SLAM.SaveTrajectoryKITTI(fileKITTI.str());
     
     return 0;
 }
@@ -289,12 +297,12 @@ void loadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                 if ( !strncmp(diread->d_name, ".", (size_t)1) )
                     continue; // ignore directory . or ..
                 string imageName(diread->d_name);
-                vstrImageLeft.push_back(strPrefixLeft + imageName);
                 // cout << "image: " << vstrImageFilenames.back() << endl;
                 // split image name with token "_" and obtain timestamp
                 // format: 00 00 00 000: hour min sec
-                imageName.insert(0, "20");
-                vector<string> timestamp = split(imageName, '_');
+                string imageTime(imageName);
+                imageTime.insert(0, "20");
+                vector<string> timestamp = split(imageTime, '_');
                 // timestanp[0]: yyyymmdd, timestamp[1]: hhmmssmss
                 std::tm t = {};
                 string strmsec = timestamp[1].substr(6, 3);
@@ -304,7 +312,7 @@ void loadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                 timestamp[1].insert(5, ":");
                 timestamp[1].erase(8, 3);
                 istringstream ss(timestamp[0] + "T" + timestamp[1]);
-                // cout << "imageName: " << timestamp[0] + "T" + timestamp[1] << endl;
+                // cout << "imageTime: " << timestamp[0] + "T" + timestamp[1] << endl;
 
                 if (ss >> std::get_time(&t, "%Y-%m-%dT%H:%M:%S"))
                 {
@@ -318,8 +326,19 @@ void loadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                     cout.precision(3);
                     // cout << "dmsec: " << dmsec << endl;
                     time = time + dmsec;
+                    // double prevtime = vTimestamps.back();
+                    // if(time - prevtime > 90.0)
+                    // {
+                    //     break;
+                    // }
+                    vstrImageLeft.push_back(strPrefixLeft + imageName);
                     vTimestamps.push_back(time);
                     cout << fixed << "timestamp: " << vTimestamps.back() << endl;
+                }
+                else
+                {
+                    cerr << "invalid timestamp while loading images";
+                    exit(-1);
                 }
             }
             closedir (dir);

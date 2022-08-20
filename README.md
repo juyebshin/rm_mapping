@@ -1,6 +1,12 @@
 # rm_mapping
 Road mark mapping with baseline framework of [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2)
 
+## Architecture
+![architecture](./architecture.png)
+
+## Result
+![result](./result001-007fps10dth15localBA_LC_short.gif)
+
 ## Install OpenCV 3.4.4
 ```
 chmod a+x opencv-3.4.4_install.sh

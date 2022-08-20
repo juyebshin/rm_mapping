@@ -5,7 +5,7 @@ Road mark mapping with baseline framework of [ORB_SLAM2](https://github.com/raul
 ![architecture](./architecture.png)
 
 ## Result
-![result](./result001-007fps10dth15localBA_LC_short.gif)
+<p align="center"><img src="result001-007fps10dth15localBA_LC_short.gif"></p>
 
 ## Install OpenCV 3.4.4
 ```
